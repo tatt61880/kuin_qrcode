@@ -1,0 +1,55 @@
+{
+	QR_Sample.kn v1.00 (for Kuin v1.01)
+		Last Modified: 2014/02/12 01:37:59.
+
+	QRコードライブラリの使用サンプルです。
+		Created by Tatt(@tatt61880)
+		https://twitter.com/tatt61880
+		https://github.com/tatt61880
+}
+
+const SampleText1: []char :: "QR Code data1"
+const SampleText2File: []char :: "data2.txt"
+
+func Init(cfg: Kuin@CCfg)
+	do cfg.Title :: "QR Sample"
+end func
+
+func Main()
+	var qrEncode1: QR_Encode@CQR_Encode :: #QR_Encode@CQR_Encode
+	var qrEncode2: QR_Encode@CQR_Encode :: #QR_Encode@CQR_Encode
+
+	var data1: []byte8 :: #[0]byte8
+	foreach c(@SampleText1)
+		do data1 :~ [c $ byte8]
+	end foreach
+	{引  数：誤り訂正レベル、型番(0=自動)、型番自動拡張フラグ、マスキング番号(-1=自動)、エンコードしたいデータ([]byte8型)、エンコードしたいデータの長さ(0=自動)}
+	do qrEncode1.EncodeData(QR_Encode@QR_LEVEL_H, 0, false, -1, data1, 0)
+
+	var data2: []byte8
+	if(Kuin@GetCmdLines().Len() > 1)
+		do data2 :: File@ReadFile(Kuin@GetCmdLines()[1])
+	else
+		do data2 :: File@ReadFile(@SampleText2File)
+	end if
+	if(data2 <>& null)
+		{引  数：誤り訂正レベル、型番(0=自動)、型番自動拡張フラグ、マスキング番号(-1=自動)、エンコードしたいデータ([]byte8型)、エンコードしたいデータの長さ(0=自動)}
+		do qrEncode2.EncodeData(QR_Encode@QR_LEVEL_M, 0, false, -1, data2, 0)
+	end if
+
+	{For Debug}
+	ifdef(dbg)
+		do Dbg@Log("data2 nSymbleSize = " ~ qrEncode2.m_nSymbleSize.ToStr())
+		var str: []char :: "data2(Ascii art):\n" ~ qrEncode2.ToStr()
+		do Dbg@Log(str)
+	end ifdef
+
+	while()
+		do Kuin@Act()
+		do Draw@Rect(0.0, 0.0, 1600.0, 900.0, 0.3, 0.4, 1.0, 1.0) {背景}
+
+		{QR_Encode@CQR_EncodeクラスのDrawメソッドの引数 => (x: float, y: float, size: float, bCellSizeMode: bool)}
+		do qrEncode1.Draw(10.0, 10.0, 300.0, false) {(x, y) = ( 10, 10)が左上になる位置に、余白含めて300のサイズで描画}
+		do qrEncode2.Draw(320.0, 10.0, 10.0, true)  {(x, y) = (320, 10)が左上になる位置に、1セルあたり10のサイズで描画}
+	end while
+end func
