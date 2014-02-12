@@ -1,6 +1,6 @@
 {
 	QR_Encode.kn v1.00 (for Kuin v1.01)
-		Last Modified: 2014/02/12 19:23:52.
+		Last Modified: 2014/02/12 19:39:41.
 
 	QRコードライブラリです。
 	同梱されている、QR_Sample.knを参考に使用してください。
@@ -1235,7 +1235,7 @@ class CQR_Encode()
 			end if
 		end for
 
-		do nFormatData :: nFormatData.Or((nFormatInfo $ byte64).Shl(10))
+		do nFormatData :+ (nFormatInfo $ byte64).Shl(10)
 
 		{マスキング}
 		do nFormatData :: nFormatData.Xor(16#5412 $ byte64) {101010000010010b}

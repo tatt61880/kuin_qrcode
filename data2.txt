@@ -1,5 +1,5 @@
 QR Code data2 (file input)
-漢字も使えます!!
+漢字も使えます♪
 (文字コード: Shift-JIS)
 
 Created by Tatt(@tatt61880)
