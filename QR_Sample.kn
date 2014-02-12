@@ -1,6 +1,6 @@
 {
-	QR_Sample.kn v1.00 (for Kuin v1.01)
-		Last Modified: 2014/02/12 18:01:47.
+	QR_Sample.kn v1.01 (for Kuin v1.01)
+		Last Modified: 2014/02/12 21:56:26.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -16,6 +16,12 @@ func Init(cfg: Kuin@CCfg)
 end func
 
 func Main()
+	while()
+		do @Do()
+	end while
+end func
+
+func Do()
 	var qrEncode1: QR_Encode@CQR_Encode :: #QR_Encode@CQR_Encode
 	var qrEncode2: QR_Encode@CQR_Encode :: #QR_Encode@CQR_Encode
 
@@ -58,7 +64,11 @@ func Main()
 		do Draw@Rect(0.0, 0.0, 1600.0, 900.0, 0.3, 0.4, 1.0, 1.0) {背景}
 
 		{QR_Encode@CQR_EncodeクラスのDrawメソッドの引数 => (x: float, y: float, size: float, bCellSizeMode: bool)}
-		do qrEncode1.Draw(10.0, 10.0, 300.0, false) {(x, y) = ( 10, 10)が左上になる位置に、余白含めて300のサイズで描画}
-		do qrEncode2.Draw(320.0, 10.0, 10.0, true)  {(x, y) = (320, 10)が左上になる位置に、1セルあたり10のサイズで描画}
+		do qrEncode1.Draw( 10.0, 10.0, 300.0, false) {(x, y) = ( 10, 10)が左上になる位置に、余白含めて300のサイズで描画}
+		do qrEncode2.Draw(320.0, 10.0,   5.0,  true) {(x, y) = (320, 10)が左上になる位置に、1セルあたり5のサイズで描画}
+
+		if(Input@Pad(0, Input@EBtn#A) = 1)
+			return
+		end if
 	end while
 end func

@@ -1,6 +1,6 @@
 {
-	QR_Encode.kn v1.00 (for Kuin v1.01)
-		Last Modified: 2014/02/12 19:48:38.
+	QR_Encode.kn v1.01 (for Kuin v1.01)
+		Last Modified: 2014/02/12 21:56:49.
 
 	QRコードライブラリです。
 	同梱されている、QR_Sample.knを参考に使用してください。
