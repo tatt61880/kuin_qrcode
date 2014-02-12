@@ -1,6 +1,6 @@
 {
 	QR_Encode.kn v1.00 (for Kuin v1.01)
-		Last Modified: 2014/02/12 01:37:56.
+		Last Modified: 2014/02/12 12:54:19.
 
 	QRコードライブラリです。
 	同梱されている、QR_Sample.knを参考に使用してください。
@@ -21,6 +21,8 @@
 		※このため、コメントにC++のコードとの対応関係を書いている場合があります。
 }
 
+const x00: byte8 :: 16#00 $ byte8 {'\x00'}
+const x11: byte8 :: 16#11 $ byte8 {'\x11'}
 const x20: byte8 :: 16#20 $ byte8 {'\x20'}
 const x30: byte8 :: 16#30 $ byte8 {'\x30'}
 
@@ -261,8 +263,6 @@ func Initialize()
 end func
 
 class CQR_Encode()
-	-var initFlag: bool
-
 	var m_nLevel: int {誤り訂正レベル}
 	var m_nVersion: int {バージョン(型番)}
 	var m_bAutoExtent: int {バージョン(型番)自動拡張指定フラグ}
@@ -294,8 +294,6 @@ class CQR_Encode()
 			do @InitializeFlag :: true
 			do @Initialize()
 		end if
-		do me.initFlag :: true
-
 		do me.m_nLevel :: 0
 		do me.m_nVersion :: 0
 		do me.m_bAutoExtent :: 0
@@ -323,9 +321,7 @@ class CQR_Encode()
 	戻り値：エンコード成功時=true、データなし、または容量オーバー時=false
 	}
 	func EncodeData(nLevel: int, nVersion: int, bAutoExtent: bool, nMaskingNo: int, lpsSource: []byte8, ncSource: int): bool
-		if(me.initFlag = false)
-			do me.Init()
-		end if
+		do me.Init()
 		do me.m_nLevel :: nLevel
 		do me.m_nMaskingNo :: nMaskingNo
 
@@ -371,7 +367,7 @@ class CQR_Encode()
 
 		for i((me.m_ncDataCodeWordBit + 7) / 8, ncDataCodeWord - 1)
 			do me.m_byDataCodeWord[i] :: byPaddingCode
-			do byPaddingCode :: ((byPaddingCode = 16#ec $ byte8) ?(16#11 $ byte8, 16#ec $ byte8))
+			do byPaddingCode :: ((byPaddingCode = 16#ec $ byte8) ?(@x11, 16#ec $ byte8))
 		end for
 
 		{総コードワード算出エリアクリア}
@@ -951,7 +947,7 @@ class CQR_Encode()
 	}
 	-func GetRSCodeWord(lpbyRSWork: []byte8, ncDataCodeWord: int, ncRSCodeWord: int)
 		for(0, ncDataCodeWord - 1)
-			if(lpbyRSWork[0] <> 0 $ byte8)
+			if(lpbyRSWork[0] <> @x00)
 				var nExpFirst: byte8 :: @byIntToExp[lpbyRSWork[0] $ int] {初項係数より乗数算出}
 
 				for j(0, ncRSCodeWord - 1)
@@ -1017,7 +1013,7 @@ class CQR_Encode()
 		{モジュールパターンをブール値に変換}
 		for i(0, me.m_nSymbleSize - 1)
 			for j(0, me.m_nSymbleSize - 1)
-				do me.m_byModuleData[i][j] :: (me.m_byModuleData[i][j].And(16#11 $ byte8) <> 0 $ byte8) $ byte8
+				do me.m_byModuleData[i][j] :: (me.m_byModuleData[i][j].And(@x11) <> @x00) $ byte8
 			end for
 		end for
 	end func
@@ -1088,7 +1084,7 @@ class CQR_Encode()
 
 		for i(0, 6)
 			for j(0, 6)
-				do me.m_byModuleData[x + j][y + i] :: (byPattern[i].And( (1 $ byte8).Shl(6 - j)) <> 0 $ byte8) ?(@x30, @x20)
+				do me.m_byModuleData[x + j][y + i] :: (byPattern[i].And( (1 $ byte8).Shl(6 - j)) <> @x00) ?(@x30, @x20)
 			end for
 		end for
 	end func
@@ -1099,12 +1095,12 @@ class CQR_Encode()
 	}
 	-func SetAlignmentPattern(x: int, y: int)
 		var byPattern: []byte8 :: [16#1f $ byte8, {{11111b}
-		}  16#11 $ byte8, {{10001b}
+		}  @x11, {{10001b}
 		}  16#15 $ byte8, {{10101b}
-		}  16#11 $ byte8, {{10001b}
+		}  @x11, {{10001b}
 		}  16#1f $ byte8]  {11111b}
 
-		if(me.m_byModuleData[x][y].And(16#20 $ byte8) <> 0 $ byte8)
+		if(me.m_byModuleData[x][y].And(16#20 $ byte8) <> @x00)
 			return {機能モジュールと重複するため除外}
 		end if
 
@@ -1114,7 +1110,7 @@ class CQR_Encode()
 
 		for i(0, 4)
 			for j(0, 4)
-				do me.m_byModuleData[x + j][y + i] :: (byPattern[i].And((1 $ byte8).Shl(4 - j)) <> 0 $ byte8) ?(@x30, @x20)
+				do me.m_byModuleData[x + j][y + i] :: (byPattern[i].And((1 $ byte8).Shl(4 - j)) <> @x00) ?(@x30, @x20)
 			end for
 		end for
 	end func
@@ -1141,8 +1137,8 @@ class CQR_Encode()
 
 		for i(0, 5)
 			for j(0, 2)
-				do me.m_byModuleData[me.m_nSymbleSize - 11 + j][i] :: (nVerData.And((1 $ byte64).Shl(i * 3 + j)) <> 0 $ byte64) ?(@x30, @x20)
 				do me.m_byModuleData[i][me.m_nSymbleSize - 11 + j] :: (nVerData.And((1 $ byte64).Shl(i * 3 + j)) <> 0 $ byte64) ?(@x30, @x20)
+				do me.m_byModuleData[me.m_nSymbleSize - 11 + j][i] :: me.m_byModuleData[i][me.m_nSymbleSize - 11 + j]
 			end for
 		end for
 	end func
@@ -1159,7 +1155,7 @@ class CQR_Encode()
 
 		for i(0, me.m_ncAllCodeWord - 1)
 			for j(0, 7)
-				while(me.m_byModuleData[x][y].And(16#20 $ byte8) <> 0 $ byte8, skip) {機能モジュールを除外}
+				while(me.m_byModuleData[x][y].And(16#20 $ byte8) <> @x00, skip) {機能モジュールを除外}
 					do x :+ nCoef_x
 					do nCoef_x :* -1
 					if(nCoef_x < 0)
@@ -1175,7 +1171,7 @@ class CQR_Encode()
 					end if
 				end while
 
-				do me.m_byModuleData[x][y] :: (me.m_byAllCodeWord[i].And((1 $ byte8).Shl(7 - j)) <> 0 $ byte8) ?(16#02 $ byte8, 16#00 $ byte8)
+				do me.m_byModuleData[x][y] :: (me.m_byAllCodeWord[i].And((1 $ byte8).Shl(7 - j)) <> @x00) ?(16#02 $ byte8, 16#00 $ byte8)
 			end for
 		end for
 	end func
@@ -1187,7 +1183,7 @@ class CQR_Encode()
 	-func SetMaskingPattern(nPatternNo: int)
 		for i(0, me.m_nSymbleSize - 1)
 			for j(0, me.m_nSymbleSize - 1)
-				if(! (me.m_byModuleData[j][i].And(16#20 $ byte8) <> 0 $ byte8)) {機能モジュールを除外}
+				if(! (me.m_byModuleData[j][i].And(16#20 $ byte8) <> @x00)) {機能モジュールを除外}
 					var bMask: bool
 					switch (nPatternNo)
 					case(0)
@@ -1287,7 +1283,7 @@ class CQR_Encode()
 				var k: int
 				for k_(j + 1, me.m_nSymbleSize - 1)
 					do k :: k_
-					if((me.m_byModuleData[i][j].And(16#11 $ byte8) = 0 $ byte8) = ((me.m_byModuleData[i][k_].And(16#11 $ byte8) = 0 $ byte8)))
+					if((me.m_byModuleData[i][j].And(@x11) = @x00) = ((me.m_byModuleData[i][k_].And(@x11) = @x00)))
 						do nCount :+ 1
 					else
 						break k_
@@ -1309,7 +1305,7 @@ class CQR_Encode()
 				var k: int
 				for k_(j + 1, me.m_nSymbleSize - 1)
 					do k :: k_
-					if((me.m_byModuleData[j][i].And(16#11 $ byte8) = 0 $ byte8) = ((me.m_byModuleData[k_][i].And(16#11 $ byte8) = 0 $ byte8)))
+					if((me.m_byModuleData[j][i].And(@x11) = @x00) = ((me.m_byModuleData[k_][i].And(@x11) = @x00)))
 						do nCount :+ 1
 					else
 						break k_
@@ -1327,9 +1323,9 @@ class CQR_Encode()
 		{同色のモジュールブロック（２×２）}
 		for i(0, me.m_nSymbleSize - 2)
 			for j(0, me.m_nSymbleSize - 2)
-				if(   ((me.m_byModuleData[i][j].And(16#11 $ byte8) = 0 $ byte8) = (me.m_byModuleData[i + 1][j    ].And(16#11 $ byte8) = 0 $ byte8)) & {
-					} ((me.m_byModuleData[i][j].And(16#11 $ byte8) = 0 $ byte8) = (me.m_byModuleData[i    ][j + 1].And(16#11 $ byte8) = 0 $ byte8)) & {
-					} ((me.m_byModuleData[i][j].And(16#11 $ byte8) = 0 $ byte8) = (me.m_byModuleData[i + 1][j + 1].And(16#11 $ byte8) = 0 $ byte8)))
+				if(   ((me.m_byModuleData[i][j].And(@x11) = @x00) = (me.m_byModuleData[i + 1][j    ].And(@x11) = @x00)) & {
+					} ((me.m_byModuleData[i][j].And(@x11) = @x00) = (me.m_byModuleData[i    ][j + 1].And(@x11) = @x00)) & {
+					} ((me.m_byModuleData[i][j].And(@x11) = @x00) = (me.m_byModuleData[i + 1][j + 1].And(@x11) = @x00)))
 					do nPenalty :+ 3
 				end if
 			end for
@@ -1338,22 +1334,22 @@ class CQR_Encode()
 		{同一列における 1:1:3:1:1 比率（暗:明:暗:明:暗）のパターン}
 		for i(0, me.m_nSymbleSize - 1)
 			for j(0, me.m_nSymbleSize - 7)
-				if(((j = 0) |					   (! (me.m_byModuleData[i][j - 1].And(16#11 $ byte8) <> 0 $ byte8))) & {明 または シンボル外
-					}  (   me.m_byModuleData[i][j    ].And(16#11 $ byte8) <> 0 $ byte8)   & {暗 - 1
-					}  (! (me.m_byModuleData[i][j + 1].And(16#11 $ byte8) <> 0 $ byte8))  & {明 - 1
-					}  (   me.m_byModuleData[i][j + 2].And(16#11 $ byte8) <> 0 $ byte8)   & {暗 ┐
-					}  (   me.m_byModuleData[i][j + 3].And(16#11 $ byte8) <> 0 $ byte8)   & {暗 │3
-					}  (   me.m_byModuleData[i][j + 4].And(16#11 $ byte8) <> 0 $ byte8)   & {暗 ┘
-					}  (! (me.m_byModuleData[i][j + 5].And(16#11 $ byte8) <> 0 $ byte8))  & {明 - 1
-					}  (   me.m_byModuleData[i][j + 6].And(16#11 $ byte8) <> 0 $ byte8)   & {暗 - 1
-					}  ((j = me.m_nSymbleSize - 7) | (! (me.m_byModuleData[i][j + 7].And(16#11 $ byte8) <> 0 $ byte8))))  {明 または シンボル外}
+				if(((j = 0) |					   (! (me.m_byModuleData[i][j - 1].And(@x11) <> @x00))) & {明 または シンボル外
+												}  (   me.m_byModuleData[i][j    ].And(@x11) <> @x00)   & {暗 - 1
+												}  (! (me.m_byModuleData[i][j + 1].And(@x11) <> @x00))  & {明 - 1
+												}  (   me.m_byModuleData[i][j + 2].And(@x11) <> @x00)   & {暗 ┐
+												}  (   me.m_byModuleData[i][j + 3].And(@x11) <> @x00)   & {暗 │3
+												}  (   me.m_byModuleData[i][j + 4].And(@x11) <> @x00)   & {暗 ┘
+												}  (! (me.m_byModuleData[i][j + 5].And(@x11) <> @x00))  & {明 - 1
+												}  (   me.m_byModuleData[i][j + 6].And(@x11) <> @x00)   & {暗 - 1
+				}    ((j = me.m_nSymbleSize - 7) | (! (me.m_byModuleData[i][j + 7].And(@x11) <> @x00))))  {明 または シンボル外}
 					{前または後に4以上の明パターン}
-					if(  ((j < 2 | ! (me.m_byModuleData[i][j - 2].And(16#11 $ byte8) <> 0 $ byte8)) & {
-						} (j < 3 | ! (me.m_byModuleData[i][j - 3].And(16#11 $ byte8) <> 0 $ byte8)) & {
-						} (j < 4 | ! (me.m_byModuleData[i][j - 4].And(16#11 $ byte8) <> 0 $ byte8))) | {
-						} ((j >= me.m_nSymbleSize -  8 | ! (me.m_byModuleData[i][j +  8].And(16#11 $ byte8) <> 0 $ byte8)) & {
-						}  (j >= me.m_nSymbleSize -  9 | ! (me.m_byModuleData[i][j +  9].And(16#11 $ byte8) <> 0 $ byte8)) & {
-						}  (j >= me.m_nSymbleSize - 10 | ! (me.m_byModuleData[i][j + 10].And(16#11 $ byte8) <> 0 $ byte8))))
+					if(  ((j < 2 | ! (me.m_byModuleData[i][j - 2].And(@x11) <> @x00)) & {
+						} (j < 3 | ! (me.m_byModuleData[i][j - 3].And(@x11) <> @x00)) & {
+						} (j < 4 | ! (me.m_byModuleData[i][j - 4].And(@x11) <> @x00))) | {
+						} ((j >= me.m_nSymbleSize -  8 | ! (me.m_byModuleData[i][j +  8].And(@x11) <> @x00)) & {
+						}  (j >= me.m_nSymbleSize -  9 | ! (me.m_byModuleData[i][j +  9].And(@x11) <> @x00)) & {
+						}  (j >= me.m_nSymbleSize - 10 | ! (me.m_byModuleData[i][j + 10].And(@x11) <> @x00))))
 						do nPenalty :+ 40
 					end if
 				end if
@@ -1363,22 +1359,22 @@ class CQR_Encode()
 		{同一行における 1:1:3:1:1 比率（暗:明:暗:明:暗）のパターン}
 		for i(0, me.m_nSymbleSize - 1)
 			for j(0, me.m_nSymbleSize - 7)
-				if(((j = 0) |					  (! (me.m_byModuleData[j - 1][i].And(16#11 $ byte8) <> 0 $ byte8))) & {明 または シンボル外
-					} (   me.m_byModuleData[j    ][i].And(16#11 $ byte8) <> 0 $ byte8)   & {暗 - 1
-					} (! (me.m_byModuleData[j + 1][i].And(16#11 $ byte8) <> 0 $ byte8))  & {明 - 1
-					} (   me.m_byModuleData[j + 2][i].And(16#11 $ byte8) <> 0 $ byte8)   & {暗 ┐
-					} (   me.m_byModuleData[j + 3][i].And(16#11 $ byte8) <> 0 $ byte8)   & {暗 │3
-					} (   me.m_byModuleData[j + 4][i].And(16#11 $ byte8) <> 0 $ byte8)   & {暗 ┘
-					} (! (me.m_byModuleData[j + 5][i].And(16#11 $ byte8) <> 0 $ byte8))  & {明 - 1
-					} (   me.m_byModuleData[j + 6][i].And(16#11 $ byte8) <> 0 $ byte8)   & {暗 - 1
-					}     ((j = me.m_nSymbleSize - 7) | (! (me.m_byModuleData[j + 7][i].And(16#11 $ byte8) <> 0 $ byte8))))  {明 または シンボル外}
+				if(((j = 0) |					  (! (me.m_byModuleData[j - 1][i].And(@x11) <> @x00))) & {明 または シンボル外
+												} (   me.m_byModuleData[j    ][i].And(@x11) <> @x00)   & {暗 - 1
+												} (! (me.m_byModuleData[j + 1][i].And(@x11) <> @x00))  & {明 - 1
+												} (   me.m_byModuleData[j + 2][i].And(@x11) <> @x00)   & {暗 ┐
+												} (   me.m_byModuleData[j + 3][i].And(@x11) <> @x00)   & {暗 │3
+												} (   me.m_byModuleData[j + 4][i].And(@x11) <> @x00)   & {暗 ┘
+												} (! (me.m_byModuleData[j + 5][i].And(@x11) <> @x00))  & {明 - 1
+												} (   me.m_byModuleData[j + 6][i].And(@x11) <> @x00)   & {暗 - 1
+				}   ((j = me.m_nSymbleSize - 7) | (! (me.m_byModuleData[j + 7][i].And(@x11) <> @x00))))  {明 または シンボル外}
 					{前または後に4以上の明パターン}
-					if(  ((j < 2 | ! (me.m_byModuleData[j - 2][i].And(16#11 $ byte8) <> 0 $ byte8)) & {
-						} (j < 3 | ! (me.m_byModuleData[j - 3][i].And(16#11 $ byte8) <> 0 $ byte8)) & {
-						} (j < 4 | ! (me.m_byModuleData[j - 4][i].And(16#11 $ byte8) <> 0 $ byte8))) | {
-						} ((j >= me.m_nSymbleSize -  8 | ! (me.m_byModuleData[j +  8][i].And(16#11 $ byte8) <> 0 $ byte8)) & {
-						}  (j >= me.m_nSymbleSize -  9 | ! (me.m_byModuleData[j +  9][i].And(16#11 $ byte8) <> 0 $ byte8)) & {
-						}  (j >= me.m_nSymbleSize - 10 | ! (me.m_byModuleData[j + 10][i].And(16#11 $ byte8) <> 0 $ byte8))))
+					if(  ((j < 2 | ! (me.m_byModuleData[j - 2][i].And(@x11) <> @x00)) & {
+						} (j < 3 | ! (me.m_byModuleData[j - 3][i].And(@x11) <> @x00)) & {
+						} (j < 4 | ! (me.m_byModuleData[j - 4][i].And(@x11) <> @x00))) | {
+						} ((j >= me.m_nSymbleSize -  8 | ! (me.m_byModuleData[j +  8][i].And(@x11) <> @x00)) & {
+						}  (j >= me.m_nSymbleSize -  9 | ! (me.m_byModuleData[j +  9][i].And(@x11) <> @x00)) & {
+						}  (j >= me.m_nSymbleSize - 10 | ! (me.m_byModuleData[j + 10][i].And(@x11) <> @x00))))
 						do nPenalty :+ 40
 					end if
 				end if
@@ -1389,7 +1385,7 @@ class CQR_Encode()
 		var nCount: int :: 0
 		for i(0, me.m_nSymbleSize - 1)
 			for j(0, me.m_nSymbleSize - 1)
-				if(! (me.m_byModuleData[i][j].And(16#11 $ byte8) <> 0 $ byte8))
+				if(! (me.m_byModuleData[i][j].And(@x11) <> @x00))
 					do nCount :+ 1
 				end if
 			end for
@@ -1401,9 +1397,9 @@ class CQR_Encode()
 
 	func ToStr(): []char
 		var ret: []char :: ""
-		for row(0, me.m_nSymbleSize - 1)
-			for col(0, me.m_nSymbleSize - 1)
-				if(me.m_byModuleData[row][col] <> 0 $ byte8)
+		for y(0, me.m_nSymbleSize - 1)
+			for x(0, me.m_nSymbleSize - 1)
+				if(me.m_byModuleData[x][y] <> @x00)
 					do ret :~ "0"
 				else
 					do ret :~ " "
@@ -1414,20 +1410,20 @@ class CQR_Encode()
 		return ret
 	end func
 
-	func Draw(x: float, y: float, size: float, bCellSizeMode: bool)
+	func Draw(x0: float, y0: float, size: float, bCellSizeMode: bool)
 		var cellSize: float
 		if(bCellSizeMode)
 			do cellSize :: size
 		else
 			do cellSize :: size / (me.m_nSymbleSize + 2 * @QR_MARGIN) $ float
 		end if
-		do Draw@Rect(x, y, (me.m_nSymbleSize + 2 * @QR_MARGIN) $ float * cellSize, (me.m_nSymbleSize + 2 * @QR_MARGIN) $ float * cellSize, 1.0, 1.0, 1.0, 1.0)
-		for row(0, me.m_nSymbleSize - 1)
-			for col(0, me.m_nSymbleSize - 1)
-				if(me.m_byModuleData[row][col] <> 0 $ byte8)
-					do Draw@Rect(x + (row + @QR_MARGIN) $ float * cellSize, y + (col + @QR_MARGIN) $ float * cellSize, cellSize, cellSize, 0.0, 0.0, 0.0, 1.0)
+		do Draw@Rect(x0, y0, (me.m_nSymbleSize + 2 * @QR_MARGIN) $ float * cellSize, (me.m_nSymbleSize + 2 * @QR_MARGIN) $ float * cellSize, 1.0, 1.0, 1.0, 1.0)
+		for x(0, me.m_nSymbleSize - 1)
+			for y(0, me.m_nSymbleSize - 1)
+				if(me.m_byModuleData[x][y] <> @x00)
+					do Draw@Rect(x0 + (x + @QR_MARGIN) $ float * cellSize, y0 + (y + @QR_MARGIN) $ float * cellSize, cellSize, cellSize, 0.0, 0.0, 0.0, 1.0)
 				else
-					do Draw@Rect(x + (row + @QR_MARGIN) $ float * cellSize, y + (col + @QR_MARGIN) $ float * cellSize, cellSize, cellSize, 1.0, 1.0, 1.0, 1.0)
+					do Draw@Rect(x0 + (x + @QR_MARGIN) $ float * cellSize, y0 + (y + @QR_MARGIN) $ float * cellSize, cellSize, cellSize, 1.0, 1.0, 1.0, 1.0)
 				end if
 			end for
 		end for

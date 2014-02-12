@@ -1,6 +1,6 @@
 {
 	QR_Sample.kn v1.00 (for Kuin v1.01)
-		Last Modified: 2014/02/12 01:37:59.
+		:ast Modified: 2014/02/12 12:40:30.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -8,8 +8,8 @@
 		https://github.com/tatt61880
 }
 
-const SampleText1: []char :: "QR Code data1"
-const SampleText2File: []char :: "data2.txt"
+const SampleData1: []char :: "QR Code data1"
+const FilenameForSampleData2: []char :: "data2.txt"
 
 func Init(cfg: Kuin@CCfg)
 	do cfg.Title :: "QR Sample"
@@ -20,7 +20,7 @@ func Main()
 	var qrEncode2: QR_Encode@CQR_Encode :: #QR_Encode@CQR_Encode
 
 	var data1: []byte8 :: #[0]byte8
-	foreach c(@SampleText1)
+	foreach c(@SampleData1)
 		do data1 :~ [c $ byte8]
 	end foreach
 	{引  数：誤り訂正レベル、型番(0=自動)、型番自動拡張フラグ、マスキング番号(-1=自動)、エンコードしたいデータ([]byte8型)、エンコードしたいデータの長さ(0=自動)}
@@ -30,7 +30,7 @@ func Main()
 	if(Kuin@GetCmdLines().Len() > 1)
 		do data2 :: File@ReadFile(Kuin@GetCmdLines()[1])
 	else
-		do data2 :: File@ReadFile(@SampleText2File)
+		do data2 :: File@ReadFile(@FilenameForSampleData2)
 	end if
 	if(data2 <>& null)
 		{引  数：誤り訂正レベル、型番(0=自動)、型番自動拡張フラグ、マスキング番号(-1=自動)、エンコードしたいデータ([]byte8型)、エンコードしたいデータの長さ(0=自動)}
@@ -39,6 +39,15 @@ func Main()
 
 	{For Debug}
 	ifdef(dbg)
+	var m_nLevel: int {誤り訂正レベル}
+	var m_nVersion: int {バージョン(型番)}
+	var m_bAutoExtent: int {バージョン(型番)自動拡張指定フラグ}
+	var m_nMaskingNo: int {マスキングパターン番号}
+	var m_nSymbleSize: int
+		do Dbg@Log("data2 nLevel = " ~ qrEncode2.m_nLevel.ToStr())
+		do Dbg@Log("data2 nVersion = " ~ qrEncode2.m_nVersion.ToStr())
+		do Dbg@Log("data2 bAutoExtent = " ~ qrEncode2.m_bAutoExtent.ToStr())
+		do Dbg@Log("data2 nMaskingNo = " ~ qrEncode2.m_nMaskingNo.ToStr())
 		do Dbg@Log("data2 nSymbleSize = " ~ qrEncode2.m_nSymbleSize.ToStr())
 		var str: []char :: "data2(Ascii art):\n" ~ qrEncode2.ToStr()
 		do Dbg@Log(str)
