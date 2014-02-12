@@ -1,6 +1,6 @@
 {
 	QR_Encode.kn v1.00 (for Kuin v1.01)
-		Last Modified: 2014/02/12 19:39:41.
+		Last Modified: 2014/02/12 19:48:38.
 
 	QRコードライブラリです。
 	同梱されている、QR_Sample.knを参考に使用してください。
@@ -1341,12 +1341,12 @@ class CQR_Encode()
 												}  (   me.m_byModuleData[i][j + 6].And(@x11) <> @x00)   & {暗 - 1
 				}    ((j = me.m_nSymbleSize - 7) | (! (me.m_byModuleData[i][j + 7].And(@x11) <> @x00))))  {明 または シンボル外}
 					{前または後に4以上の明パターン}
-					if(  ((j < 2 | ! (me.m_byModuleData[i][j - 2].And(@x11) <> @x00)) & {
-						} (j < 3 | ! (me.m_byModuleData[i][j - 3].And(@x11) <> @x00)) & {
-						} (j < 4 | ! (me.m_byModuleData[i][j - 4].And(@x11) <> @x00))) | {
-						} ((j >= me.m_nSymbleSize -  8 | ! (me.m_byModuleData[i][j +  8].And(@x11) <> @x00)) & {
-						}  (j >= me.m_nSymbleSize -  9 | ! (me.m_byModuleData[i][j +  9].And(@x11) <> @x00)) & {
-						}  (j >= me.m_nSymbleSize - 10 | ! (me.m_byModuleData[i][j + 10].And(@x11) <> @x00))))
+					if(						   ((j < 2 | ! (me.m_byModuleData[i][j - 2].And(@x11) <> @x00)) & {
+											}   (j < 3 | ! (me.m_byModuleData[i][j - 3].And(@x11) <> @x00)) & {
+											}   (j < 4 | ! (me.m_byModuleData[i][j - 4].And(@x11) <> @x00))) | {
+						} ((j >= me.m_nSymbleSize -  8 | ! (me.m_byModuleData[i][j + 8].And(@x11) <> @x00)) & {
+						}  (j >= me.m_nSymbleSize -  9 | ! (me.m_byModuleData[i][j + 9].And(@x11) <> @x00)) & {
+						}  (j >= me.m_nSymbleSize - 10 | ! (me.m_byModuleData[i][j +10].And(@x11) <> @x00))))
 						do nPenalty :+ 40
 					end if
 				end if
@@ -1366,12 +1366,12 @@ class CQR_Encode()
 												} (   me.m_byModuleData[j + 6][i].And(@x11) <> @x00)   & {暗 - 1
 				}   ((j = me.m_nSymbleSize - 7) | (! (me.m_byModuleData[j + 7][i].And(@x11) <> @x00))))  {明 または シンボル外}
 					{前または後に4以上の明パターン}
-					if(  ((j < 2 | ! (me.m_byModuleData[j - 2][i].And(@x11) <> @x00)) & {
-						} (j < 3 | ! (me.m_byModuleData[j - 3][i].And(@x11) <> @x00)) & {
-						} (j < 4 | ! (me.m_byModuleData[j - 4][i].And(@x11) <> @x00))) | {
-						} ((j >= me.m_nSymbleSize -  8 | ! (me.m_byModuleData[j +  8][i].And(@x11) <> @x00)) & {
-						}  (j >= me.m_nSymbleSize -  9 | ! (me.m_byModuleData[j +  9][i].And(@x11) <> @x00)) & {
-						}  (j >= me.m_nSymbleSize - 10 | ! (me.m_byModuleData[j + 10][i].And(@x11) <> @x00))))
+					if(						   ((j < 2 | ! (me.m_byModuleData[j - 2][i].And(@x11) <> @x00)) & {
+											}   (j < 3 | ! (me.m_byModuleData[j - 3][i].And(@x11) <> @x00)) & {
+											}   (j < 4 | ! (me.m_byModuleData[j - 4][i].And(@x11) <> @x00))) | {
+						} ((j >= me.m_nSymbleSize -  8 | ! (me.m_byModuleData[j + 8][i].And(@x11) <> @x00)) & {
+						}  (j >= me.m_nSymbleSize -  9 | ! (me.m_byModuleData[j + 9][i].And(@x11) <> @x00)) & {
+						}  (j >= me.m_nSymbleSize - 10 | ! (me.m_byModuleData[j +10][i].And(@x11) <> @x00))))
 						do nPenalty :+ 40
 					end if
 				end if
