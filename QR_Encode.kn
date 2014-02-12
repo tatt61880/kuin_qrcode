@@ -1,6 +1,6 @@
 {
 	QR_Encode.kn v1.00 (for Kuin v1.01)
-		Last Modified: 2014/02/12 12:54:19.
+		Last Modified: 2014/02/12 19:23:52.
 
 	QRコードライブラリです。
 	同梱されている、QR_Sample.knを参考に使用してください。
@@ -433,7 +433,6 @@ class CQR_Encode()
 			do nBlockNo :+ 1
 		end for
 
-
 		for i(0, ncBlock2 - 1)
 			{ do ZeroMemory(me.m_byRSWork, sizeof(me.m_byRSWork)) }
 			do me.m_byRSWork :: #[@MAX_CODEBLOCK]byte8 {ＲＳコードワード算出ワーク}
@@ -786,7 +785,7 @@ class CQR_Encode()
 				do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, (me.m_nBlockLength[i] / 2) $ byte16, @nIndicatorLenKanji[nVerGroup])
 				{漢字モードでビット列保存}
 				for j(0, me.m_nBlockLength[i] - 1, 2)
-					var wBinCode: byte16 :: me.KanjiToBinaly(((lpsSource[ncComplete + j] $ byte16).Shl(8)).And(lpsSource[ncComplete + j] $ byte16))
+					var wBinCode: byte16 :: me.KanjiToBinaly((lpsSource[ncComplete + j] $ byte16).Shl(8) + lpsSource[ncComplete + j] $ byte16)
 					do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, wBinCode, 13)
 				end for
 				do ncComplete :+ me.m_nBlockLength[i]
@@ -937,7 +936,7 @@ class CQR_Encode()
 		default {case(16#e040 to 16#ebbf)}
 			do wc :: (wc $ int - 16#c140) $ byte16
 		end switch
-		return ((wc.Shr(8) $ int * 16#c0) $ byte16).And(wc.And(16#00ff $ byte16))
+		return wc.Shr(8) * 16#c0 $ byte16 + wc.And(16#00ff $ byte16)
 	end func
 
 	{
@@ -1032,9 +1031,9 @@ class CQR_Encode()
 		for i(0, 7)
 			do me.m_byModuleData[i][7] :: @x20
 			do me.m_byModuleData[7][i] :: @x20
-			do me.m_byModuleData[me.m_nSymbleSize - 8][i] :: @x20
+			do me.m_byModuleData[me.m_nSymbleSize - 8    ][i] :: @x20
 			do me.m_byModuleData[me.m_nSymbleSize - 8 + i][7] :: @x20
-			do me.m_byModuleData[i][me.m_nSymbleSize - 8] :: @x20
+			do me.m_byModuleData[i][me.m_nSymbleSize - 8    ] :: @x20
 			do me.m_byModuleData[7][me.m_nSymbleSize - 8 + i] :: @x20
 		end for
 
@@ -1075,16 +1074,15 @@ class CQR_Encode()
 	}
 	-func SetFinderPattern(x: int, y: int)
 		var byPattern: []byte8 :: [16#7f $ byte8, {{1111111b}
-		}  16#41 $ byte8, {{1000001b}
-		}  16#5d $ byte8, {{1011101b}
-		}  16#5d $ byte8, {{1011101b}
-		}  16#5d $ byte8, {{1011101b}
-		}  16#41 $ byte8, {{1000001b}
-		}  16#7f $ byte8]  {1111111b}
-
+								}  16#41 $ byte8, {{1000001b}
+								}  16#5d $ byte8, {{1011101b}
+								}  16#5d $ byte8, {{1011101b}
+								}  16#5d $ byte8, {{1011101b}
+								}  16#41 $ byte8, {{1000001b}
+								}  16#7f $ byte8]  {1111111b}
 		for i(0, 6)
 			for j(0, 6)
-				do me.m_byModuleData[x + j][y + i] :: (byPattern[i].And( (1 $ byte8).Shl(6 - j)) <> @x00) ?(@x30, @x20)
+				do me.m_byModuleData[x + j][y + i] :: (byPattern[i].And((1 $ byte8).Shl(6 - j)) <> @x00) ?(@x30, @x20)
 			end for
 		end for
 	end func
@@ -1095,12 +1093,11 @@ class CQR_Encode()
 	}
 	-func SetAlignmentPattern(x: int, y: int)
 		var byPattern: []byte8 :: [16#1f $ byte8, {{11111b}
-		}  @x11, {{10001b}
-		}  16#15 $ byte8, {{10101b}
-		}  @x11, {{10001b}
-		}  16#1f $ byte8]  {11111b}
-
-		if(me.m_byModuleData[x][y].And(16#20 $ byte8) <> @x00)
+								}  16#11 $ byte8, {{10001b}
+								}  16#15 $ byte8, {{10101b}
+								}  16#11 $ byte8, {{10001b}
+								}  16#1f $ byte8]  {11111b}
+		if(me.m_byModuleData[x][y].And(@x20) <> @x00)
 			return {機能モジュールと重複するため除外}
 		end if
 
@@ -1133,7 +1130,7 @@ class CQR_Encode()
 			end if
 		end for
 
-		do nVerData :: nVerData.And((me.m_nVersion $ byte64).Shl(12))
+		do nVerData :+ (me.m_nVersion $ byte64).Shl(12)
 
 		for i(0, 5)
 			for j(0, 2)
@@ -1183,7 +1180,7 @@ class CQR_Encode()
 	-func SetMaskingPattern(nPatternNo: int)
 		for i(0, me.m_nSymbleSize - 1)
 			for j(0, me.m_nSymbleSize - 1)
-				if(! (me.m_byModuleData[j][i].And(16#20 $ byte8) <> @x00)) {機能モジュールを除外}
+				if(! (me.m_byModuleData[j][i].And(@x20) <> @x00)) {機能モジュールを除外}
 					var bMask: bool
 					switch (nPatternNo)
 					case(0)
@@ -1436,7 +1433,7 @@ end func
 
 -func memmove(toByte8s: []byte8, fromByte8s: []byte8, startIndex: int, num: int)
 	var i: int :: 0
-	for j(startIndex, num)
+	for j(startIndex, startIndex + num - 1)
 		do toByte8s[i] :: fromByte8s[j]
 		do i :+ 1
 	end for
