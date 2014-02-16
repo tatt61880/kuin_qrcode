@@ -1,6 +1,6 @@
 {
 	QR_Encode.kn v1.01 (for Kuin v1.01)
-		Last Modified: 2014/02/12 21:56:49.
+		Last Modified: 2014/02/16 20:46:17.
 
 	QRコードライブラリです。
 	同梱されている、QR_Sample.knを参考に使用してください。
@@ -785,7 +785,7 @@ class CQR_Encode()
 				do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, (me.m_nBlockLength[i] / 2) $ byte16, @nIndicatorLenKanji[nVerGroup])
 				{漢字モードでビット列保存}
 				for j(0, me.m_nBlockLength[i] - 1, 2)
-					var wBinCode: byte16 :: me.KanjiToBinaly((lpsSource[ncComplete + j] $ byte16).Shl(8) + lpsSource[ncComplete + j] $ byte16)
+					var wBinCode: byte16 :: me.KanjiToBinaly((lpsSource[ncComplete + j] $ byte16).Shl(8) + lpsSource[ncComplete + j + 1] $ byte16)
 					do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, wBinCode, 13)
 				end for
 				do ncComplete :+ me.m_nBlockLength[i]
