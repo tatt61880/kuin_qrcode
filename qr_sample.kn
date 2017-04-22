@@ -1,6 +1,6 @@
 {
 	qr_sample.kn
-		Last Modified: 2017/04/23 00:06:17.
+		Last Modified: 2017/04/23 03:39:35.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -11,11 +11,18 @@
 const sampleData1: []char :: "QR Code data1"
 const filenameForSampleData2: []char :: "data2.txt"
 
+var editLog: wnd@EditMulti
+
 func main()
 	const wndSizeW: int :: 800
 	const wndSizeH: int :: 400
 	var wndMain: wnd@Wnd :: wnd@makeWnd(null, %normal, wndSizeW, wndSizeH, "Hello, QR!")
 	var drawMain: wnd@Draw :: wnd@makeDraw(wndMain, 0, 0, wndSizeW, wndSizeH, %fix, %fix)
+
+	{
+	var wndLog: wnd@Wnd :: wnd@makeWnd(null, %normal, 512, 512, "for debug")
+	do @editLog :: wnd@makeEditMulti(wndLog, 12, 12, 500, 500, %scale, %scale)
+	}
 	while(wnd@act())
 		do @Do()
 	end while
@@ -54,19 +61,14 @@ func Do()
 	end if
 
 	{
-	Ifdef(dbg)
-		var m_nLevel: int {誤り訂正レベル}
-		var m_nVersion: int {バージョン(型番)}
-		var m_bAutoExtent: int {バージョン(型番)自動拡張指定フラグ}
-		var m_nMaskingNo: int {マスキングパターン番号}
-		var m_nSymbleSize: int
-		do cui@print("data2 nLevel = \{qrEncode2.m_nLevel}\n")
-		do cui@print("data2 nVersion = \{qrEncode2.m_nVersion}\n")
-		do cui@print("data2 bAutoExtent = \{qrEncode2.m_bAutoExtent}\n")
-		do cui@print("data2 nMaskingNo = \{qrEncode2.m_nMaskingNo}\n")
-		do cui@print("data2 nSymbleSize = \{qrEncode2.m_nSymbleSize}\n")
-		do cui@print("data2(Ascii art):\n\{qrEncode2}\n")
-	end ifdef
+	do @editLog.readonly(true)
+	do @editLog.setText(
+	|"data2 nLevel = \{qrEncode2.m_nLevel}\n" ~
+	|"data2 nVersion = \{qrEncode2.m_nVersion}\n" ~
+	|"data2 bAutoExtent = \{qrEncode2.m_bAutoExtent}\n" ~
+	|"data2 nMaskingNo = \{qrEncode2.m_nMaskingNo}\n" ~
+	|"data2 nSymbleSize = \{qrEncode2.m_nSymbleSize}\n" ~
+	|"data2(Ascii art):\n\{qrEncode2.toStr()}\n")
 	}
 
 	do draw@clearColor(1.0, 0.0, 1.0)

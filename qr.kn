@@ -225,12 +225,12 @@ func initialize()
 end func
 
 +class QrEncode()
-	var m_nLevel: int {誤り訂正レベル}
-	var m_nVersion: int {バージョン(型番)}
-	var m_bAutoExtent: int {バージョン(型番)自動拡張指定フラグ}
-	var m_nMaskingNo: int {マスキングパターン番号}
+	+var m_nLevel: int {誤り訂正レベル}
+	+var m_nVersion: int {バージョン(型番)}
+	+var m_bAutoExtent: int {バージョン(型番)自動拡張指定フラグ}
+	+var m_nMaskingNo: int {マスキングパターン番号}
+	+var m_nSymbleSize: int
 
-	var m_nSymbleSize: int
 	var m_byModuleData: [][]bit8 {[x][y]}
 	{
 	bit5:機能モジュール（マスキング対象外）フラグ
@@ -1353,7 +1353,7 @@ end func
 		ret nPenalty
 	end func
 
-	func toStr(): []char
+	+func toStr(): []char
 		var retVal: []char :: ""
 		for y(0, me.m_nSymbleSize - 1)
 			for x(0, me.m_nSymbleSize - 1)
