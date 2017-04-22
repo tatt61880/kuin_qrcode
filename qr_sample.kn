@@ -1,6 +1,6 @@
 {
 	qr_sample.kn
-		Last Modified: 2017/04/22 20:29:56.
+		Last Modified: 2017/04/23 00:06:17.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -8,25 +8,78 @@
 		https://github.com/tatt61880
 }
 
+const sampleData1: []char :: "QR Code data1"
+const filenameForSampleData2: []char :: "data2.txt"
+
 func main()
-	var data: []bit8 :: #[0]bit8
-	const inputData: []char :: "Hello, QR!! (Created by Kuin)"
-	foreach c(inputData)
-		do data :~ [c $ bit8]
+	const wndSizeW: int :: 800
+	const wndSizeH: int :: 400
+	var wndMain: wnd@Wnd :: wnd@makeWnd(null, %normal, wndSizeW, wndSizeH, "Hello, QR!")
+	var drawMain: wnd@Draw :: wnd@makeDraw(wndMain, 0, 0, wndSizeW, wndSizeH, %fix, %fix)
+	while(wnd@act())
+		do @Do()
+	end while
+end func
+
+func Do()
+	var qrEncode1: \qr@QrEncode :: #\qr@QrEncode
+	var qrEncode2: \qr@QrEncode :: #\qr@QrEncode
+
+	var data1: []bit8 :: #[0]bit8
+	foreach c(@sampleData1)
+		do data1 :~ [c $ bit8]
 	end foreach
+	{引  数：誤り訂正レベル、型番(0=自動)、型番自動拡張フラグ、マスキング番号(-1=自動)、エンコードしたいデータ([]bit8型)、エンコードしたいデータの長さ(0=自動)}
+	do qrEncode1.encodeData(\qr@QR_LEVEL_H, 0, false, -1, data1, 0)
 
-	var qrEncode: \qr@QrEncode :: #\qr@QrEncode
-	do qrEncode.encodeData(\qr@QR_LEVEL_H, 0, false, -1, data, 0)
+	var data2: []bit8
+	var reader: file@Reader 
+	if(^lib@cmdLine() > 0)
+		do reader :: file@makeReader(lib@cmdLine()[0])
+	else
+		do reader :: file@makeReader(@filenameForSampleData2)
+	end if
+	do data2 :: reader.read(reader.fileSize())
+	if(data2 <>& null)
+		{
+		【引数】
+		・誤り訂正レベル
+		・型番(0=自動)
+		・型番自動拡張フラグ
+		・マスキング番号(-1=自動)
+		・エンコードしたいデータ([]bit8型)
+		・エンコードしたいデータの長さ(0=自動)
+		}
+		do qrEncode2.encodeData(\qr@QR_LEVEL_M, 0, false, -1, data2, 0)
+	end if
 
-	const size: int :: 220
-	const margin: int :: 10
-	const wndSize: int :: size + 2 * margin
-	var wndMain: wnd@Wnd :: wnd@makeWnd(null, %normal, wndSize, wndSize, "Hello, QR!")
-	var drawMain: wnd@Draw :: wnd@makeDraw(wndMain, 0, 0, wndSize, wndSize, %fix, %fix)
+	{
+	Ifdef(dbg)
+		var m_nLevel: int {誤り訂正レベル}
+		var m_nVersion: int {バージョン(型番)}
+		var m_bAutoExtent: int {バージョン(型番)自動拡張指定フラグ}
+		var m_nMaskingNo: int {マスキングパターン番号}
+		var m_nSymbleSize: int
+		do cui@print("data2 nLevel = \{qrEncode2.m_nLevel}\n")
+		do cui@print("data2 nVersion = \{qrEncode2.m_nVersion}\n")
+		do cui@print("data2 bAutoExtent = \{qrEncode2.m_bAutoExtent}\n")
+		do cui@print("data2 nMaskingNo = \{qrEncode2.m_nMaskingNo}\n")
+		do cui@print("data2 nSymbleSize = \{qrEncode2.m_nSymbleSize}\n")
+		do cui@print("data2(Ascii art):\n\{qrEncode2}\n")
+	end ifdef
+	}
+
 	do draw@clearColor(1.0, 0.0, 1.0)
 	while(wnd@act())
-		do draw@rect(0.0, 0.0, wndSize $ float, wndSize $ float, 0.3, 0.4, 1.0, 1.0)
-		do qrEncode.draw(margin $ float, margin $float, size $ float, false)
+		do draw@rect(0.0, 0.0, 1600.0, 900.0, 0.3, 0.4, 1.0, 1.0) {背景}
+
+		{\qr@QrEncodeクラスのDrawメソッドの引数 => (x: float, y: float, size: float, bCellSizeMode: bool)}
+		do qrEncode1.draw( 10.0, 10.0, 300.0, false) {(x, y) = ( 10, 10)が左上になる位置に、余白含めて300のサイズで描画}
+		do qrEncode2.draw(320.0, 10.0,   5.0,  true) {(x, y) = (320, 10)が左上になる位置に、1セルあたり5のサイズで描画}
+
+		if(input@pad(0, %a) = 5)
+			ret
+		end if
 		do draw@render(30)
 	end while
 end func
