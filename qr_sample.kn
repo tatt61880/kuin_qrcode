@@ -1,6 +1,6 @@
 {
 	qr_sample.kn
-		Last Modified: 2017/04/23 03:39:35.
+		Last Modified: 2017/04/23 03:48:28.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -72,16 +72,13 @@ func Do()
 	}
 
 	do draw@clearColor(1.0, 0.0, 1.0)
-	while(wnd@act())
-		do draw@rect(0.0, 0.0, 1600.0, 900.0, 0.3, 0.4, 1.0, 1.0) {背景}
+	do draw@rect(0.0, 0.0, 1600.0, 900.0, 0.3, 0.4, 1.0, 1.0) {背景}
 
-		{\qr@QrEncodeクラスのDrawメソッドの引数 => (x: float, y: float, size: float, bCellSizeMode: bool)}
-		do qrEncode1.draw( 10.0, 10.0, 300.0, false) {(x, y) = ( 10, 10)が左上になる位置に、余白含めて300のサイズで描画}
-		do qrEncode2.draw(320.0, 10.0,   5.0,  true) {(x, y) = (320, 10)が左上になる位置に、1セルあたり5のサイズで描画}
+	{\qr@QrEncodeクラスのDrawメソッドの引数 => (x: float, y: float, size: float, bCellSizeMode: bool)}
+	do qrEncode1.draw( 10.0, 10.0, 300.0, false) {(x, y) = ( 10, 10)が左上になる位置に、余白含めて300のサイズで描画}
+	do qrEncode2.draw(320.0, 10.0,   5.0,  true) {(x, y) = (320, 10)が左上になる位置に、1セルあたり5のサイズで描画}
+	do draw@render(30)
 
-		if(input@pad(0, %a) = 5)
-			ret
-		end if
-		do draw@render(30)
+	while(wnd@act() & input@pad(0, %a) <> 5)
 	end while
 end func
