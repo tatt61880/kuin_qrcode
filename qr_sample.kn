@@ -1,6 +1,6 @@
 {
 	qr_sample.kn
-		Last Modified: 2017/04/23 03:48:28.
+		Last Modified: 2017/04/23 12:00:31.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -37,7 +37,7 @@ func Do()
 		do data1 :~ [c $ bit8]
 	end foreach
 	{引  数：誤り訂正レベル、型番(0=自動)、型番自動拡張フラグ、マスキング番号(-1=自動)、エンコードしたいデータ([]bit8型)、エンコードしたいデータの長さ(0=自動)}
-	do qrEncode1.encodeData(\qr@QR_LEVEL_H, 0, false, -1, data1, 0)
+	do qrEncode1.encodeData(%QR_LEVEL_H, 0, false, -1, data1, 0)
 
 	var data2: []bit8
 	var reader: file@Reader 
@@ -57,7 +57,7 @@ func Do()
 		・エンコードしたいデータ([]bit8型)
 		・エンコードしたいデータの長さ(0=自動)
 		}
-		do qrEncode2.encodeData(\qr@QR_LEVEL_M, 0, false, -1, data2, 0)
+		do qrEncode2.encodeData(%QR_LEVEL_M, 0, false, -1, data2, 0)
 	end if
 
 	{
