@@ -21,27 +21,19 @@ const x20: bit8 :: 16#20b8 {'\x20'}
 const x30: bit8 :: 16#30b8 {'\x30'}
 
 {誤り訂正レベル}
-+enum Level
-	QR_LEVEL_L
-	QR_LEVEL_M
-	QR_LEVEL_Q
-	QR_LEVEL_H
-end enum
-
++const QR_LEVEL_L: int :: 0
++const QR_LEVEL_M: int :: 1
++const QR_LEVEL_Q: int :: 2
++const QR_LEVEL_H: int :: 3
 {データモード}
-enum Mode
-	QR_MODE_NUMERAL
-	QR_MODE_ALPHABET
-	QR_MODE_8BIT
-	QR_MODE_KANJI
-end enum
-
+const QR_MODE_NUMERAL:  bit8 :: 0b8
+const QR_MODE_ALPHABET: bit8 :: 1b8
+const QR_MODE_8BIT:     bit8 :: 2b8
+const QR_MODE_KANJI:    bit8 :: 3b8
 {バージョン(型番)グループ}
-enum Version
-	QR_VRESION_S { 1 ～  9}
-	QR_VRESION_M {10 ～ 26}
-	QR_VRESION_L {27 ～ 40}
-end enum
+const QR_VRESION_S: int :: 0 { 1 ～  9}
+const QR_VRESION_M: int :: 1 {10 ～ 26}
+const QR_VRESION_L: int :: 2 {27 ～ 40}
 
 const MAX_ALLCODEWORD:  int :: 3706 {総コードワード数最大値}
 const MAX_DATACODEWORD: int :: 2956 {データコードワード最大値(バージョン40-L)}
@@ -82,12 +74,12 @@ class QrVersionInfo()
 	{struct RS_BLOCKINFO}
 	class RsBlockInfo()
 		+var ncRSBlock: int {ＲＳブロック数}
-		+var ncAllCodeWord: int {ブロック内コードワード数}
-		+var ncDataCodeWord: int {データコードワード数(コードワード数 - ＲＳコードワード数)}
+		+var ncBlockAllCodeWord: int {ブロック内コードワード数}
+		+var ncBlockDataCodeWord: int {データコードワード数(コードワード数 - ＲＳコードワード数)}
 		+func init(rsBlockInfo: []int, n: int): RsBlockInfo
 			do me.ncRSBlock :: rsBlockInfo[n]
-			do me.ncAllCodeWord :: rsBlockInfo[n + 1]
-			do me.ncDataCodeWord :: rsBlockInfo[n + 2]
+			do me.ncBlockAllCodeWord :: rsBlockInfo[n + 1]
+			do me.ncBlockDataCodeWord :: rsBlockInfo[n + 2]
 			ret me
 		end func
 	end class
@@ -217,8 +209,8 @@ func initialize()
 	var byRSExp64: []int :: [ 45, 51,175,  9,  7,158,159, 49, 68,119, 92,123,177,204,187,254,200, 78,141,149,119, 26,127, 53,160, 93,199,212, 29, 24,145,156,208,150,218,209,  4,216, 91, 47,184,146, 47,140,195,195,125,242,238, 63, 99,108,140,230,242, 31,204, 11,178,243,217,156,213,231]
 	var byRSExp66: []int :: [  5,118,222,180,136,136,162, 51, 46,117, 13,215, 81, 17,139,247,197,171, 95,173, 65,137,178, 68,111, 95,101, 41, 72,214,169,197, 95,  7, 44,154, 77,111,236, 40,121,143, 63, 87, 80,253,240,126,217, 77, 34,232,106, 50,168, 82, 76,146, 67,106,171, 25,132, 93, 45,105]
 	var byRSExp68: []int :: [247,159,223, 33,224, 93, 77, 70, 90,160, 32,254, 43,150, 84,101,190,205,133, 52, 60,202,165,220,203,151, 93, 84, 15, 84,253,173,160, 89,227, 52,199, 97, 95,231, 52,177, 41,125,137,241,166,225,118,  2, 54, 32, 82,215,175,198, 43,238,235, 27,101,184,127,  3,  5,  8,163,238]
-	do @byRSExp :: [     null, null,       null,      null,      null,      null,      null,  byRSExp7,      null, null,
-	|               byRSExp10, null,       null, byRSExp13,      null, byRSExp15, byRSExp16, byRSExp17, byRSExp18, null,
+	do @byRSExp :: [     null, null,      null,       null,      null,      null,      null,  byRSExp7,      null, null,
+	|               byRSExp10, null,      null,  byRSExp13,      null, byRSExp15, byRSExp16, byRSExp17, byRSExp18, null,
 	|               byRSExp20, null, byRSExp22,       null, byRSExp24,      null, byRSExp26,      null, byRSExp28, null,
 	|               byRSExp30, null, byRSExp32,       null, byRSExp34,      null, byRSExp36,      null, byRSExp38, null,
 	|               byRSExp40, null, byRSExp42,       null, byRSExp44,      null, byRSExp46,      null, byRSExp48, null,
@@ -233,12 +225,12 @@ func initialize()
 end func
 
 +class QrEncode()
-	+var m_nLevel: int {誤り訂正レベル}
-	+var m_nVersion: int {バージョン(型番)}
-	+var m_bAutoExtent: int {バージョン(型番)自動拡張指定フラグ}
-	+var m_nMaskingNo: int {マスキングパターン番号}
-	+var m_nSymbleSize: int
+	var m_nLevel: int {誤り訂正レベル}
+	var m_nVersion: int {バージョン(型番)}
+	var m_bAutoExtent: int {バージョン(型番)自動拡張指定フラグ}
+	var m_nMaskingNo: int {マスキングパターン番号}
 
+	var m_nSymbleSize: int
 	var m_byModuleData: [][]bit8 {[x][y]}
 	{
 	bit5:機能モジュール（マスキング対象外）フラグ
@@ -252,7 +244,7 @@ end func
 	var m_byDataCodeWord: []bit8 {入力データエンコードエリア}
 
 	var m_ncDataBlock: int
-	var m_byBlockMode: []@Mode
+	var m_byBlockMode: []bit8
 	var m_nBlockLength: []int
 
 	var m_ncAllCodeWord: int {総コードワード数(ＲＳ誤り訂正データを含む)}
@@ -276,7 +268,7 @@ end func
 		do me.m_byDataCodeWord :: #[@MAX_DATACODEWORD]bit8
 
 		do me.m_ncDataBlock :: 0
-		do me.m_byBlockMode :: #[@MAX_DATACODEWORD]@Mode
+		do me.m_byBlockMode :: #[@MAX_DATACODEWORD]bit8
 		do me.m_nBlockLength :: #[@MAX_DATACODEWORD]int
 
 		do me.m_ncAllCodeWord :: 0
@@ -285,14 +277,30 @@ end func
 		ret me
 	end func
 
+	+func getLevel(): int
+		ret me.m_nLevel
+	end func
+	+func getVersion(): int
+		ret me.m_nVersion
+	end func
+	+func getAutoExtent(): int
+		ret me.m_bAutoExtent
+	end func
+	+func getMaskingNo(): int
+		ret me.m_nMaskingNo
+	end func
+	+func getSymbleSize(): int
+		ret me.m_nSymbleSize
+	end func
+
 	{
 	用  途：データエンコード
 	引  数：誤り訂正レベル、型番(0=自動)、型番自動拡張フラグ、マスキング番号(-1=自動)、エンコードしたいデータ、エンコードしたいデータの長さ(0=自動)
 	戻り値：エンコード成功時=true、データなし、または容量オーバー時=false
 	}
-	+func encodeData(nLevel: @Level, nVersion: int, bAutoExtent: bool, nMaskingNo: int, lpsSource: []bit8, ncSource: int): bool
+	+func encodeData(nLevel: int, nVersion: int, bAutoExtent: bool, nMaskingNo: int, lpsSource: []bit8, ncSource: int): bool
 		do me.init()
-		do me.m_nLevel :: nLevel $ int
+		do me.m_nLevel :: nLevel
 		do me.m_nMaskingNo :: nMaskingNo
 
 		{データ長が指定されていない場合は lstrlen によって取得}
@@ -325,11 +333,11 @@ end func
 		end if
 
 		{ターミネータコード"0000"付加}
-		var ncDataCodeWord: int :: @qrVersionInfo[me.m_nVersion].ncDataCodeWord[me.m_nLevel]
+		var ncDataCodeWord: int :: @qrVersionInfo[me.m_nVersion].ncDataCodeWord[nLevel]
 		var ncTerminater: int :: @min(4, (ncDataCodeWord * 8) - me.m_ncDataCodeWordBit)
 
 		if(ncTerminater > 0)
-			do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, 0b16, ncTerminater)
+			do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, 0b16, ncTerminater)
 		end if
 
 		{パディングコード"11101100, 00010001"付加}
@@ -349,15 +357,15 @@ end func
 		var nDataCwIndex: int :: 0 {データコードワード処理位置}
 
 		{データブロック分割数}
-		var ncBlock1: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo1[me.m_nLevel].ncRSBlock
-		var ncBlock2: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo2[me.m_nLevel].ncRSBlock
+		var ncBlock1: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo1[nLevel].ncRSBlock
+		var ncBlock2: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo2[nLevel].ncRSBlock
 		var ncBlockSum: int :: ncBlock1 + ncBlock2
 
 		var nBlockNo: int :: 0 {処理中ブロック番号}
 
 		{ブロック別データコードワード数}
-		var ncDataCw1: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo1[me.m_nLevel].ncDataCodeWord
-		var ncDataCw2: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo2[me.m_nLevel].ncDataCodeWord
+		var ncDataCw1: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo1[nLevel].ncBlockDataCodeWord
+		var ncDataCw2: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo2[nLevel].ncBlockDataCodeWord
 
 		{データコードワードインターリーブ配置}
 		for i(0, ncBlock1 - 1)
@@ -382,8 +390,8 @@ end func
 		end for
 
 		{ブロック別ＲＳコードワード数(※現状では同数)}
-		var ncRSCw1: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo1[me.m_nLevel].ncAllCodeWord - ncDataCw1
-		var ncRSCw2: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo2[me.m_nLevel].ncAllCodeWord - ncDataCw2
+		var ncRSCw1: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo1[nLevel].ncBlockAllCodeWord - ncDataCw1
+		var ncRSCw2: int :: @qrVersionInfo[me.m_nVersion].rsBlockInfo2[nLevel].ncBlockAllCodeWord - ncDataCw2
 
 		{ＲＳコードワード算出}
 		do nDataCwIndex :: 0
@@ -393,7 +401,7 @@ end func
 			{ do ZeroMemory(me.m_byRSWork, sizeof(me.m_byRSWork)) }
 			do me.m_byRSWork :: #[@MAX_CODEBLOCK]bit8 {ＲＳコードワード算出ワーク}
 			do @memmove(me.m_byRSWork, me.m_byDataCodeWord, nDataCwIndex, ncDataCw1)
-			do me.getRSCodeWord(me.m_byRSWork, ncDataCw1, ncRSCw1)
+			do me.GetRSCodeWord(me.m_byRSWork, ncDataCw1, ncRSCw1)
 
 			{ＲＳコードワード配置}
 			for j(0, ncRSCw1 - 1)
@@ -408,7 +416,7 @@ end func
 			{ do ZeroMemory(me.m_byRSWork, sizeof(me.m_byRSWork)) }
 			do me.m_byRSWork :: #[@MAX_CODEBLOCK]bit8 {ＲＳコードワード算出ワーク}
 			do @memmove(me.m_byRSWork, me.m_byDataCodeWord, nDataCwIndex, ncDataCw2)
-			do me.getRSCodeWord(me.m_byRSWork, ncDataCw2, ncRSCw2)
+			do me.GetRSCodeWord(me.m_byRSWork, ncDataCw2, ncRSCw2)
 
 			{ＲＳコードワード配置}
 			for j(0, ncRSCw2 - 1)
@@ -432,30 +440,29 @@ end func
 	戻り値：バージョン番号（容量オーバー時=0）
 	}
 	func getEncodeVersion(nVersion: int, lpsSource: []bit8, ncLength: int): int
-		var nVerGroup: @Version :: (nVersion >= 27) ?(%QR_VRESION_L, (nVersion >= 10) ?(%QR_VRESION_M $ @Version, %QR_VRESION_S))
+		var nVerGroup: int :: nVersion >= 27 ?(@QR_VRESION_L, (nVersion >= 10 ?(@QR_VRESION_M, @QR_VRESION_S)))
 
-		for i(nVerGroup $ int, %QR_VRESION_L $ @Version $ int)
-			if(me.encodeSourceData(lpsSource, ncLength, i))
-				switch(i $ @Version)
-				case(%QR_VRESION_S)
+		for i(nVerGroup, @QR_VRESION_L)
+			if(me.EncodeSourceData(lpsSource, ncLength, i))
+				if(i = @QR_VRESION_S)
 					for j(1, 9)
 						if((me.m_ncDataCodeWordBit + 7) / 8 <= @qrVersionInfo[j].ncDataCodeWord[me.m_nLevel])
 							ret j
 						end if
 					end for
-				case(%QR_VRESION_M)
+				elif(i = @QR_VRESION_M)
 					for j(10, 26)
 						if((me.m_ncDataCodeWordBit + 7) / 8 <= @qrVersionInfo[j].ncDataCodeWord[me.m_nLevel])
 							ret j
 						end if
 					end for
-				case(%QR_VRESION_L)
+				elif(i = @QR_VRESION_L)
 					for j(27, 40)
 						if((me.m_ncDataCodeWordBit + 7) / 8 <= @qrVersionInfo[j].ncDataCodeWord[me.m_nLevel])
 							ret j
 						end if
 					end for
-				end switch
+				end if
 			end if
 		end for
 
@@ -467,22 +474,22 @@ end func
 	引  数：入力データ、入力データ長、バージョン(型番)グループ
 	戻り値：エンコード成功時=true
 	}
-	func encodeSourceData(lpsSource: []bit8, ncLength: int, nVerGroup: int): bool
+	func EncodeSourceData(lpsSource: []bit8, ncLength: int, nVerGroup: int): bool
 		{ do ZeroMemory(me.m_nBlockLength, sizeof(me.m_nBlockLength)) }
 		do me.m_nBlockLength :: #[@MAX_DATACODEWORD]int
 
 		{どのモードが何文字(バイト)継続しているかを調査}
 		do me.m_ncDataBlock :: 0
 		for i(0, ncLength - 1)
-			var byMode: @Mode
-			if(i < ncLength - 1 & me.isKanjiData(lpsSource[i], lpsSource[i + 1]))
-				do byMode :: %QR_MODE_KANJI
-			elif(me.isNumeralData(lpsSource[i]))
-				do byMode :: %QR_MODE_NUMERAL
-			elif(me.isAlphabetData(lpsSource[i]))
-				do byMode :: %QR_MODE_ALPHABET
+			var byMode: bit8
+			if(i < ncLength - 1 & me.IsKanjiData(lpsSource[i], lpsSource[i + 1]))
+				do byMode :: @QR_MODE_KANJI
+			elif(me.IsNumeralData(lpsSource[i]))
+				do byMode :: @QR_MODE_NUMERAL
+			elif(me.IsAlphabetData(lpsSource[i]))
+				do byMode :: @QR_MODE_ALPHABET
 			else
-				do byMode :: %QR_MODE_8BIT
+				do byMode :: @QR_MODE_8BIT
 			end if
 
 			if(i = 0)
@@ -494,7 +501,7 @@ end func
 				do me.m_byBlockMode[me.m_ncDataBlock] :: byMode
 			end if
 
-			if(byMode = %QR_MODE_KANJI)
+			if(byMode = @QR_MODE_KANJI)
 				do me.m_nBlockLength[me.m_ncDataBlock] :+ 2
 				do i :+ 1
 			else
@@ -514,32 +521,32 @@ end func
 			var nJoinPosition: int :: 0 {８ビットバイトモードブロックとの結合：-1=前と結合、0=結合しない、1=後ろと結合}
 
 			{「数字－英数字」または「英数字－数字」の並び}
-			if(  (me.m_byBlockMode[nBlock] = %QR_MODE_NUMERAL  & me.m_byBlockMode[nBlock + 1] = %QR_MODE_ALPHABET) |
-				|(me.m_byBlockMode[nBlock] = %QR_MODE_ALPHABET & me.m_byBlockMode[nBlock + 1] = %QR_MODE_NUMERAL))
+			if(  (me.m_byBlockMode[nBlock] = @QR_MODE_NUMERAL  & me.m_byBlockMode[nBlock + 1] = @QR_MODE_ALPHABET) |
+				|(me.m_byBlockMode[nBlock] = @QR_MODE_ALPHABET & me.m_byBlockMode[nBlock + 1] = @QR_MODE_NUMERAL))
 				{元のビット長と単一の英数字モードブロック化した場合のビット長を比較}
-				do ncSrcBits :: me.getBitLength(me.m_byBlockMode[nBlock    ], me.m_nBlockLength[nBlock    ], nVerGroup) +
-				|               me.getBitLength(me.m_byBlockMode[nBlock + 1], me.m_nBlockLength[nBlock + 1], nVerGroup)
-				do ncDstBits :: me.getBitLength(%QR_MODE_ALPHABET, me.m_nBlockLength[nBlock] + me.m_nBlockLength[nBlock + 1], nVerGroup)
+				do ncSrcBits :: me.GetBitLength(me.m_byBlockMode[nBlock    ], me.m_nBlockLength[nBlock    ], nVerGroup) +
+				|               me.GetBitLength(me.m_byBlockMode[nBlock + 1], me.m_nBlockLength[nBlock + 1], nVerGroup)
+				do ncDstBits :: me.GetBitLength(@QR_MODE_ALPHABET, me.m_nBlockLength[nBlock] + me.m_nBlockLength[nBlock + 1], nVerGroup)
 				if(ncSrcBits > ncDstBits)
 					{前後に８ビットバイトモードブロックがある場合、それらとの結合が有利かどうかをチェック}
-					if(nBlock >= 1 & me.m_byBlockMode[nBlock - 1] = %QR_MODE_8BIT)
+					if(nBlock >= 1 & me.m_byBlockMode[nBlock - 1] = @QR_MODE_8BIT)
 						{前に８ビットバイトモードブロックあり}
-						do ncJoinFront :: me.getBitLength(%QR_MODE_8BIT, me.m_nBlockLength[nBlock - 1] + me.m_nBlockLength[nBlock], nVerGroup) +
-						|                 me.getBitLength(me.m_byBlockMode[nBlock + 1], me.m_nBlockLength[nBlock + 1], nVerGroup)
+						do ncJoinFront :: me.GetBitLength(@QR_MODE_8BIT, me.m_nBlockLength[nBlock - 1] + me.m_nBlockLength[nBlock], nVerGroup) +
+						|                 me.GetBitLength(me.m_byBlockMode[nBlock + 1], me.m_nBlockLength[nBlock + 1], nVerGroup)
 
-						if(ncJoinFront > ncDstBits + me.getBitLength(%QR_MODE_8BIT, me.m_nBlockLength[nBlock - 1], nVerGroup))
+						if(ncJoinFront > ncDstBits + me.GetBitLength(@QR_MODE_8BIT, me.m_nBlockLength[nBlock - 1], nVerGroup))
 							do ncJoinFront :: 0 {８ビットバイトモードブロックとは結合しない}
 						end if
 					else
 						do ncJoinFront :: 0
 					end if
 
-					if(nBlock < me.m_ncDataBlock - 2 & me.m_byBlockMode[nBlock + 2] = %QR_MODE_8BIT)
+					if(nBlock < me.m_ncDataBlock - 2 & me.m_byBlockMode[nBlock + 2] = @QR_MODE_8BIT)
 						{後ろに８ビットバイトモードブロックあり}
-						do ncJoinBehind :: me.getBitLength(me.m_byBlockMode[nBlock], me.m_nBlockLength[nBlock], nVerGroup) +
-						|                  me.getBitLength(%QR_MODE_8BIT, me.m_nBlockLength[nBlock + 1] + me.m_nBlockLength[nBlock + 2], nVerGroup)
+						do ncJoinBehind :: me.GetBitLength(me.m_byBlockMode[nBlock], me.m_nBlockLength[nBlock], nVerGroup) +
+						|                  me.GetBitLength(@QR_MODE_8BIT, me.m_nBlockLength[nBlock + 1] + me.m_nBlockLength[nBlock + 2], nVerGroup)
 
-						if(ncJoinBehind > ncDstBits + me.getBitLength(%QR_MODE_8BIT, me.m_nBlockLength[nBlock + 2], nVerGroup))
+						if(ncJoinBehind > ncDstBits + me.GetBitLength(@QR_MODE_8BIT, me.m_nBlockLength[nBlock + 2], nVerGroup))
 							do ncJoinBehind :: 0 {８ビットバイトモードブロックとは結合しない}
 						end if
 					else
@@ -564,7 +571,7 @@ end func
 								do me.m_nBlockLength[i] :: me.m_nBlockLength[i + 1]
 							end for
 						else
-							do me.m_byBlockMode[nBlock + 1] :: %QR_MODE_8BIT
+							do me.m_byBlockMode[nBlock + 1] :: @QR_MODE_8BIT
 							do me.m_nBlockLength[nBlock + 1] :+ me.m_nBlockLength[nBlock + 2]
 
 							{後続をシフト}
@@ -576,7 +583,7 @@ end func
 						do me.m_ncDataBlock :- 1
 					else
 						{英数字と数字の並びを単一の英数字モードブロックに統合}
-						if(nBlock < me.m_ncDataBlock - 2 & me.m_byBlockMode[nBlock + 2] = %QR_MODE_ALPHABET)
+						if(nBlock < me.m_ncDataBlock - 2 & me.m_byBlockMode[nBlock + 2] = @QR_MODE_ALPHABET)
 							{結合しようとするブロックの後ろに続く英数字モードブロックを結合}
 							do me.m_nBlockLength[nBlock + 1] :+ me.m_nBlockLength[nBlock + 2]
 							{後続をシフト}
@@ -587,7 +594,7 @@ end func
 							do me.m_ncDataBlock :- 1
 						end if
 
-						do me.m_byBlockMode[nBlock] :: %QR_MODE_ALPHABET
+						do me.m_byBlockMode[nBlock] :: @QR_MODE_ALPHABET
 						do me.m_nBlockLength[nBlock] :+ me.m_nBlockLength[nBlock + 1]
 
 						{後続をシフト}
@@ -598,7 +605,7 @@ end func
 
 						do me.m_ncDataBlock :- 1
 
-						if(nBlock >= 1 & me.m_byBlockMode[nBlock - 1] = %QR_MODE_ALPHABET)
+						if(nBlock >= 1 & me.m_byBlockMode[nBlock - 1] = @QR_MODE_ALPHABET)
 							{結合したブロックの前の英数字モードブロックを結合}
 							do me.m_nBlockLength[nBlock - 1] :+ me.m_nBlockLength[nBlock]
 
@@ -622,22 +629,22 @@ end func
 		{連続する短いモードブロックを８ビットバイトモードブロック化}
 		do nBlock :: 0
 		while a(nBlock < me.m_ncDataBlock - 1)
-			do ncSrcBits :: me.getBitLength(me.m_byBlockMode[nBlock    ], me.m_nBlockLength[nBlock    ], nVerGroup) +
-			|               me.getBitLength(me.m_byBlockMode[nBlock + 1], me.m_nBlockLength[nBlock + 1], nVerGroup)
-			do ncDstBits :: me.getBitLength(%QR_MODE_8BIT, me.m_nBlockLength[nBlock] + me.m_nBlockLength[nBlock + 1], nVerGroup)
+			do ncSrcBits :: me.GetBitLength(me.m_byBlockMode[nBlock    ], me.m_nBlockLength[nBlock    ], nVerGroup) +
+			|               me.GetBitLength(me.m_byBlockMode[nBlock + 1], me.m_nBlockLength[nBlock + 1], nVerGroup)
+			do ncDstBits :: me.GetBitLength(@QR_MODE_8BIT, me.m_nBlockLength[nBlock] + me.m_nBlockLength[nBlock + 1], nVerGroup)
 
 			{前に８ビットバイトモードブロックがある場合、重複するインジケータ分を減算}
-			if(nBlock >= 1 & me.m_byBlockMode[nBlock - 1] = %QR_MODE_8BIT)
+			if(nBlock >= 1 & me.m_byBlockMode[nBlock - 1] = @QR_MODE_8BIT)
 				do ncDstBits :- (4 + @nIndicatorLen8Bit[nVerGroup])
 			end if
 
 			{後ろに８ビットバイトモードブロックがある場合、重複するインジケータ分を減算}
-			if(nBlock < me.m_ncDataBlock - 2 & me.m_byBlockMode[nBlock + 2] = %QR_MODE_8BIT)
+			if(nBlock < me.m_ncDataBlock - 2 & me.m_byBlockMode[nBlock + 2] = @QR_MODE_8BIT)
 				do ncDstBits :- (4 + @nIndicatorLen8Bit[nVerGroup])
 			end if
 
 			if(ncSrcBits > ncDstBits)
-				if(nBlock >= 1 & me.m_byBlockMode[nBlock - 1] = %QR_MODE_8BIT)
+				if(nBlock >= 1 & me.m_byBlockMode[nBlock - 1] = @QR_MODE_8BIT)
 					{結合するブロックの前にある８ビットバイトモードブロックを結合}
 					do me.m_nBlockLength[nBlock - 1] :+ me.m_nBlockLength[nBlock]
 
@@ -651,7 +658,7 @@ end func
 					do nBlock :- 1
 				end if
 
-				if(nBlock < me.m_ncDataBlock - 2 & me.m_byBlockMode[nBlock + 2] = %QR_MODE_8BIT)
+				if(nBlock < me.m_ncDataBlock - 2 & me.m_byBlockMode[nBlock + 2] = @QR_MODE_8BIT)
 					{結合するブロックの後ろにある８ビットバイトモードブロックを結合}
 					do me.m_nBlockLength[nBlock + 1] :+ me.m_nBlockLength[nBlock + 2]
 
@@ -664,7 +671,7 @@ end func
 					do me.m_ncDataBlock :- 1
 				end if
 
-				do me.m_byBlockMode[nBlock] :: %QR_MODE_8BIT
+				do me.m_byBlockMode[nBlock] :: @QR_MODE_8BIT
 				do me.m_nBlockLength[nBlock] :+ me.m_nBlockLength[nBlock + 1]
 
 				{後続をシフト}
@@ -696,68 +703,68 @@ end func
 
 		var i: int :: 0
 		while(i < me.m_ncDataBlock & me.m_ncDataCodeWordBit <> -1)
-			if(me.m_byBlockMode[i] = %QR_MODE_NUMERAL) {数字モード}
+			if(me.m_byBlockMode[i] = @QR_MODE_NUMERAL) {数字モード}
 				{インジケータ(0001b)}
-				do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, 1b16, 4)
+				do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, 1b16, 4)
 				{文字数セット}
-				do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, me.m_nBlockLength[i] $ bit16, @nIndicatorLenNumeral[nVerGroup])
+				do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, me.m_nBlockLength[i] $ bit16, @nIndicatorLenNumeral[nVerGroup])
 				{ビット列保存}
 				for j(0, me.m_nBlockLength[i] - 1, 3)
 					if(j < me.m_nBlockLength[i] - 2)
 						do wBinCode :: (  ((lpsSource[ncComplete + j    ] $ int - '0' $ int) * 100) +
 						|                 ((lpsSource[ncComplete + j + 1] $ int - '0' $ int) *  10) +
-						|                 (lpsSource[ncComplete + j + 2] $ int - '0' $ int)) $ bit16
-						do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, wBinCode, 10)
+						|                  (lpsSource[ncComplete + j + 2] $ int - '0' $ int)) $ bit16
+						do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, wBinCode, 10)
 					elif(j = me.m_nBlockLength[i] - 2)
 						{端数２バイト}
 						do wBinCode :: (  ((lpsSource[ncComplete + j    ] $ int - '0' $ int) *  10) +
 						|                  (lpsSource[ncComplete + j + 1] $ int - '0' $ int)) $ bit16
-						do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, wBinCode,  7)
+						do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, wBinCode,  7)
 					elif(j = me.m_nBlockLength[i] - 1)
 						{端数１バイト}
 						do wBinCode ::     (lpsSource[ncComplete + j    ] $ int - '0' $ int) $ bit16
-						do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, wBinCode,  4)
+						do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, wBinCode,  4)
 					end if
 				end for
 				do ncComplete :+ me.m_nBlockLength[i]
 
-			elif(me.m_byBlockMode[i] = %QR_MODE_ALPHABET) {英数字モード}
+			elif(me.m_byBlockMode[i] = @QR_MODE_ALPHABET) {英数字モード}
 				{モードインジケータ(0010b)}
-				do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, 2b16, 4)
+				do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, 2b16, 4)
 				{文字数セット}
-				do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, me.m_nBlockLength[i] $ bit16, @nIndicatorLenAlphabet[nVerGroup])
+				do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, me.m_nBlockLength[i] $ bit16, @nIndicatorLenAlphabet[nVerGroup])
 				{ビット列保存}
 				for j(0, me.m_nBlockLength[i] - 1, 2)
 					if(j < me.m_nBlockLength[i] - 1)
-						do wBinCode :: ((me.alphabetToBinaly(lpsSource[ncComplete + j    ]) * 45) +
-						|                me.alphabetToBinaly(lpsSource[ncComplete + j + 1])) $ bit16
-						do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, wBinCode, 11)
+						do wBinCode :: ((me.AlphabetToBinaly(lpsSource[ncComplete + j    ]) * 45) +
+						|                me.AlphabetToBinaly(lpsSource[ncComplete + j + 1])) $ bit16
+						do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, wBinCode, 11)
 					else
 						{端数１バイト}
-						do wBinCode :: me.alphabetToBinaly(lpsSource[ncComplete + j]) $ bit16
-						do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, wBinCode, 6)
+						do wBinCode :: me.AlphabetToBinaly(lpsSource[ncComplete + j]) $ bit16
+						do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, wBinCode, 6)
 					end if
 				end for
 				do ncComplete :+ me.m_nBlockLength[i]
-			elif(me.m_byBlockMode[i] = %QR_MODE_8BIT) {８ビットバイトモード}
+			elif(me.m_byBlockMode[i] = @QR_MODE_8BIT) {８ビットバイトモード}
 				{モードインジケータ(0100b)}
-				do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, 4b16, 4)
+				do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, 4b16, 4)
 				{文字数セット}
-				do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, me.m_nBlockLength[i] $ bit16, @nIndicatorLen8Bit[nVerGroup])
+				do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, me.m_nBlockLength[i] $ bit16, @nIndicatorLen8Bit[nVerGroup])
 				{ビット列保存}
 				for j(0, me.m_nBlockLength[i] - 1)
-					do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, lpsSource[ncComplete + j] $ bit16, 8)
+					do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, lpsSource[ncComplete + j] $ bit16, 8)
 				end for
 				do ncComplete :+ me.m_nBlockLength[i]
-			else {me.m_byBlockMode[i] = %QR_MODE_KANJI} {漢字モード}
+			else {me.m_byBlockMode[i] = @QR_MODE_KANJI} {漢字モード}
 				{モードインジケータ(1000b)}
-				do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, 8b16, 4)
+				do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, 8b16, 4)
 				{文字数セット}
-				do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, (me.m_nBlockLength[i] / 2) $ bit16, @nIndicatorLenKanji[nVerGroup])
+				do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, (me.m_nBlockLength[i] / 2) $ bit16, @nIndicatorLenKanji[nVerGroup])
 				{漢字モードでビット列保存}
 				for j(0, me.m_nBlockLength[i] - 1, 2)
-					var wBinCode: bit16 :: me.kanjiToBinaly((lpsSource[ncComplete + j] $ bit16).shl(8) + lpsSource[ncComplete + j + 1] $ bit16)
-					do me.m_ncDataCodeWordBit :: me.setBitStream(me.m_ncDataCodeWordBit, wBinCode, 13)
+					do wBinCode :: me.KanjiToBinaly((lpsSource[ncComplete + j] $ bit16).shl(8) + lpsSource[ncComplete + j + 1] $ bit16)
+					do me.m_ncDataCodeWordBit :: me.SetBitStream(me.m_ncDataCodeWordBit, wBinCode, 13)
 				end for
 				do ncComplete :+ me.m_nBlockLength[i]
 			end if
@@ -773,26 +780,25 @@ end func
 	戻り値：データビット長
 	備  考：漢字モードでのデータ長引数は文字数ではなくバイト数
 	}
-	func getBitLength(nMode: @Mode, ncData: int, nVerGroup: int): int
+	func GetBitLength(nMode: bit8, ncData: int, nVerGroup: int): int
 		var ncBits: int ::  0
 
-		switch(nMode)
-		case %QR_MODE_NUMERAL
+		switch (nMode)
+		case @QR_MODE_NUMERAL
 			do ncBits :: 4 + @nIndicatorLenNumeral[nVerGroup] + (10 * (ncData / 3))
 			switch(ncData % 3)
 			case 1
 				do ncBits :+ 4
 			case 2
 				do ncBits :+ 7
+			default {case (0)}
 			end switch
-		case %QR_MODE_ALPHABET
+		case @QR_MODE_ALPHABET
 			do ncBits :: 4 + @nIndicatorLenAlphabet[nVerGroup] + (11 * (ncData / 2)) + (6 * (ncData % 2))
-		case %QR_MODE_8BIT
+		case @QR_MODE_8BIT
 			do ncBits :: 4 + @nIndicatorLen8Bit[nVerGroup]     + ( 8 * ncData)
-		case %QR_MODE_KANJI
+		default {case @QR_MODE_KANJI}
 			do ncBits :: 4 + @nIndicatorLenKanji[nVerGroup]    + (13 * (ncData / 2))
-		default
-			assert false
 		end switch
 
 		ret ncBits
@@ -804,7 +810,7 @@ end func
 	戻り値：次回挿入位置(バッファオーバー時=-1)
 	備  考：me.m_byDataCodeWord に結果をセット(要ゼロ初期化)
 	}
-	func setBitStream(nIndex: int, wData: bit16, ncData: int): int
+	func SetBitStream(nIndex: int, wData: bit16, ncData: int): int
 		if(nIndex = -1 | nIndex + ncData > @MAX_DATACODEWORD * 8)
 			ret -1
 		end if
@@ -823,7 +829,7 @@ end func
 	引  数：調査文字
 	戻り値：該当時=true
 	}
-	func isNumeralData(c: bit8): bool
+	func IsNumeralData(c: bit8): bool
 		switch(c $ char)
 		case '0' to '9'
 			ret true
@@ -836,7 +842,7 @@ end func
 	引  数：調査文字
 	戻り値：該当時=true
 	}
-	func isAlphabetData(c: bit8): bool
+	func IsAlphabetData(c: bit8): bool
 		switch(c $ char)
 		case '0' to '9'
 			ret true
@@ -854,7 +860,7 @@ end func
 	戻り値：該当時=true
 	備  考：EBBFh 以降の S-JIS は対象外
 	}
-	func isKanjiData(c1: bit8, c2: bit8): bool
+	func IsKanjiData(c1: bit8, c2: bit8): bool
 		if(   ((c1 >= 16#81b8 & c1 <= 16#9Fb8) | (c1 >= 16#E0b8 & c1 <= 16#EBb8)) & (c2 >= 16#40b8))
 			if((c1  = 16#9Fb8 & c2 >  16#FCb8) | (c1  = 16#EBb8 & c2 >  16#BFb8))
 				ret false
@@ -869,7 +875,7 @@ end func
 	引  数：対象文字
 	戻り値：バイナリ値
 	}
-	func alphabetToBinaly(c: bit8): int
+	func AlphabetToBinaly(c: bit8): int
 		switch(c $ char)
 		case '0' to '9'
 			ret (c $ int - '0' $ int)
@@ -891,10 +897,8 @@ end func
 			ret 42
 		case '/'
 			ret 43
-		case ':'
-			ret 44
 		default
-			assert false
+			ret 44 {case ':'}
 		end switch
 	end func
 
@@ -903,14 +907,12 @@ end func
 	引  数：対象文字
 	戻り値：バイナリ値
 	}
-	func kanjiToBinaly(wc: bit16): bit16
+	func KanjiToBinaly(wc: bit16): bit16
 		switch(wc)
 		case 16#8140b16 to 16#9FFCb16
 			do wc :: (wc $ int - 16#8140) $ bit16
-		case 16#E040b16 to 16#EBBFb16
+		default {case 16#e040 to 16#ebbf}
 			do wc :: (wc $ int - 16#C140) $ bit16
-		default
-			assert false
 		end switch
 		ret wc.shr(8) * 16#C0b16 + wc.and(16#00FFb16)
 	end func
@@ -920,8 +922,8 @@ end func
 	引  数：データコードワードアドレス、データコードワード長、ＲＳコードワード長
 	備  考：総コードワード分のエリアを確保してから呼び出し
 	}
-	func getRSCodeWord(lpbyRSWork: []bit8, ncDataCodeWord: int, ncRSCodeWord: int)
-		for(0, ncDataCodeWord - 1)
+	func GetRSCodeWord(lpbyRSWork: []bit8, ncDataCodeWord: int, ncRSCodeWord: int)
+		for(1, ncDataCodeWord)
 			if(lpbyRSWork[0] <> @x00)
 				var nExpFirst: bit8 :: @byIntToExp[lpbyRSWork[0] $ int] {初項係数より乗数算出}
 
@@ -964,14 +966,14 @@ end func
 			{最適マスキングパターン選択}
 			do me.m_nMaskingNo :: 0
 
-			do me.setMaskingPattern(me.m_nMaskingNo) {マスキング}
-			do me.setFormatInfoPattern(me.m_nMaskingNo) {フォーマット情報パターン配置}
+			do me.SetMaskingPattern(me.m_nMaskingNo) {マスキング}
+			do me.SetFormatInfoPattern(me.m_nMaskingNo) {フォーマット情報パターン配置}
 
 			var nMinPenalty: int :: me.countPenalty()
 
 			for i(1, 7)
-				do me.setMaskingPattern(i) {マスキング}
-				do me.setFormatInfoPattern(i) {フォーマット情報パターン配置}
+				do me.SetMaskingPattern(i) {マスキング}
+				do me.SetFormatInfoPattern(i) {フォーマット情報パターン配置}
 
 				var nPenalty: int :: me.countPenalty()
 
@@ -982,8 +984,8 @@ end func
 			end for
 		end if
 
-		do me.setMaskingPattern(me.m_nMaskingNo) {マスキング}
-		do me.setFormatInfoPattern(me.m_nMaskingNo) {フォーマット情報パターン配置}
+		do me.SetMaskingPattern(me.m_nMaskingNo) {マスキング}
+		do me.SetFormatInfoPattern(me.m_nMaskingNo) {フォーマット情報パターン配置}
 
 		{モジュールパターンをブール値に変換}
 		for i(0, me.m_nSymbleSize - 1)
@@ -999,9 +1001,9 @@ end func
 	}
 	func setFunctionModule()
 		{位置検出パターン}
-		do me.setFinderPattern(0, 0)
-		do me.setFinderPattern(me.m_nSymbleSize - 7, 0)
-		do me.setFinderPattern(0, me.m_nSymbleSize - 7)
+		do me.SetFinderPattern(0, 0)
+		do me.SetFinderPattern(me.m_nSymbleSize - 7, 0)
+		do me.SetFinderPattern(0, me.m_nSymbleSize - 7)
 
 		{位置検出パターンセパレータ}
 		for i(0, 7)
@@ -1025,14 +1027,14 @@ end func
 		end for
 
 		{バージョン情報パターン}
-		do me.setVersionPattern()
+		do me.SetVersionPattern()
 
 		{位置合わせパターン}
 		for i(0, @qrVersionInfo[me.m_nVersion].ncAlignPoint - 1)
-			do me.setAlignmentPattern(@qrVersionInfo[me.m_nVersion].nAlignPoint[i], 6)
-			do me.setAlignmentPattern(6, @qrVersionInfo[me.m_nVersion].nAlignPoint[i])
+			do me.SetAlignmentPattern(@qrVersionInfo[me.m_nVersion].nAlignPoint[i], 6)
+			do me.SetAlignmentPattern(6, @qrVersionInfo[me.m_nVersion].nAlignPoint[i])
 			for j(0, @qrVersionInfo[me.m_nVersion].ncAlignPoint - 1)
-				do me.setAlignmentPattern(@qrVersionInfo[me.m_nVersion].nAlignPoint[i], @qrVersionInfo[me.m_nVersion].nAlignPoint[j])
+				do me.SetAlignmentPattern(@qrVersionInfo[me.m_nVersion].nAlignPoint[i], @qrVersionInfo[me.m_nVersion].nAlignPoint[j])
 			end for
 		end for
 
@@ -1047,7 +1049,7 @@ end func
 	用  途：位置検出パターン配置
 	引  数：配置左上座標
 	}
-	func setFinderPattern(x: int, y: int)
+	func SetFinderPattern(x: int, y: int)
 		var byPattern: []bit8 :: [16#7Fb8, {1111111b}
 		|                         16#41b8, {1000001b}
 		|                         16#5Db8, {1011101b}
@@ -1066,7 +1068,7 @@ end func
 	用  途：位置合わせパターン配置
 	引  数：配置中央座標
 	}
-	func setAlignmentPattern(x: int, y: int)
+	func SetAlignmentPattern(x: int, y: int)
 		var byPattern: []bit8 :: [16#1Fb8, {11111b}
 		|                         16#11b8, {10001b}
 		|                         16#15b8, {10101b}
@@ -1091,7 +1093,7 @@ end func
 	用  途：バージョン(型番)情報パターン配置
 	備  考：拡張ＢＣＨ(18,6)符号を誤り訂正として使用
 	}
-	func setVersionPattern()
+	func SetVersionPattern()
 		if(me.m_nVersion <= 6)
 			ret
 		end if
@@ -1152,12 +1154,12 @@ end func
 	用  途：マスキングパターン配置
 	引  数：マスキングパターン番号
 	}
-	func setMaskingPattern(nPatternNo: int)
+	func SetMaskingPattern(nPatternNo: int)
 		for i(0, me.m_nSymbleSize - 1)
 			for j(0, me.m_nSymbleSize - 1)
 				if(! (me.m_byModuleData[j][i].and(@x20) <> @x00)) {機能モジュールを除外}
 					var bMask: bool
-					switch(nPatternNo)
+					switch (nPatternNo)
 					case 0
 						do bMask :: ((i + j) % 2 = 0)
 					case 1
@@ -1172,10 +1174,8 @@ end func
 						do bMask :: (((i * j) % 2) + ((i * j) % 3) = 0)
 					case 6
 						do bMask :: ((((i * j) % 2) + ((i * j) % 3)) % 2 = 0)
-					case 7
+					default {case 7}
 						do bMask :: ((((i * j) % 3) + ((i + j) % 2)) % 2 = 0)
-					default
-						assert false
 					end switch
 					do me.m_byModuleData[j][i] :: me.m_byModuleData[j][i].and(16#FEb8).or(((me.m_byModuleData[j][i].and(16#02b8) $ int > 1) $ bit8).xor(bMask $ bit8))
 				end if
@@ -1187,20 +1187,18 @@ end func
 	用  途：フォーマット情報配置
 	引  数：マスキングパターン番号
 	}
-	func setFormatInfoPattern(nPatternNo: int)
+	func SetFormatInfoPattern(nPatternNo: int)
 		var nFormatInfo: int
 
-		switch(me.m_nLevel $ @Level)
-		case %QR_LEVEL_L
-			do nFormatInfo :: 2#01000
-		case %QR_LEVEL_M
-			do nFormatInfo :: 2#00000
-		case %QR_LEVEL_Q
-			do nFormatInfo :: 2#11000
-		case %QR_LEVEL_H
-			do nFormatInfo :: 2#10000
-		default
-			assert false
+		switch(me.m_nLevel)
+		case @QR_LEVEL_M
+			do nFormatInfo :: 16#00 {00nnnb}
+		case @QR_LEVEL_L
+			do nFormatInfo :: 16#08 {01nnnb}
+		case @QR_LEVEL_Q
+			do nFormatInfo :: 16#18 {11nnnb}
+		default {case @QR_LEVEL_H}
+			do nFormatInfo :: 16#10 {10nnnb}
 		end switch
 
 		do nFormatInfo :+ nPatternNo
@@ -1371,7 +1369,7 @@ end func
 		ret nPenalty
 	end func
 
-	+func toStr(): []char
+	+*func toStr(): []char
 		var retVal: []char :: ""
 		for y(0, me.m_nSymbleSize - 1)
 			for x(0, me.m_nSymbleSize - 1)
@@ -1393,13 +1391,13 @@ end func
 		else
 			do cellSize :: size / (me.m_nSymbleSize + 2 * @QR_MARGIN) $ float
 		end if
-		do draw@rect(x0, y0, (me.m_nSymbleSize + 2 * @QR_MARGIN) $ float * cellSize, (me.m_nSymbleSize + 2 * @QR_MARGIN) $ float * cellSize, 1.0, 1.0, 1.0, 1.0)
+		do draw@rect(x0, y0, (me.m_nSymbleSize + 2 * @QR_MARGIN) $ float * cellSize, (me.m_nSymbleSize + 2 * @QR_MARGIN) $ float * cellSize, 16#FFFFFFFF)
 		for x(0, me.m_nSymbleSize - 1)
 			for y(0, me.m_nSymbleSize - 1)
 				if(me.m_byModuleData[x][y] <> @x00)
-					do draw@rect(x0 + (x + @QR_MARGIN) $ float * cellSize, y0 + (y + @QR_MARGIN) $ float * cellSize, cellSize, cellSize, 0.0, 0.0, 0.0, 1.0)
+					do draw@rect(x0 + (x + @QR_MARGIN) $ float * cellSize, y0 + (y + @QR_MARGIN) $ float * cellSize, cellSize, cellSize, 16#FF000000)
 				else
-					do draw@rect(x0 + (x + @QR_MARGIN) $ float * cellSize, y0 + (y + @QR_MARGIN) $ float * cellSize, cellSize, cellSize, 1.0, 1.0, 1.0, 1.0)
+					do draw@rect(x0 + (x + @QR_MARGIN) $ float * cellSize, y0 + (y + @QR_MARGIN) $ float * cellSize, cellSize, cellSize, 16#FFFFFFFF)
 				end if
 			end for
 		end for

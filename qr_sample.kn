@@ -1,6 +1,6 @@
 {
 	qr_sample.kn
-		Last Modified: 2017/04/23 12:00:31.
+		Last Modified: 2017/10/29 12:57:56.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -16,13 +16,13 @@ var editLog: wnd@EditMulti
 func main()
 	const wndSizeW: int :: 800
 	const wndSizeH: int :: 400
-	var wndMain: wnd@Wnd :: wnd@makeWnd(null, %normal, wndSizeW, wndSizeH, "Hello, QR!")
-	var drawMain: wnd@Draw :: wnd@makeDraw(wndMain, 0, 0, wndSizeW, wndSizeH, %fix, %fix)
+	var wndMain: wnd@Wnd :: wnd@makeWnd(null, %aspect, wndSizeW, wndSizeH, "Hello, QR!")
+	var drawMain: wnd@Draw :: wnd@makeDraw(wndMain, 0, 0, wndSizeW, wndSizeH, %scale, %scale, false)
 
-	{
-	var wndLog: wnd@Wnd :: wnd@makeWnd(null, %normal, 512, 512, "for debug")
-	do @editLog :: wnd@makeEditMulti(wndLog, 12, 12, 500, 500, %scale, %scale)
-	}
+	if(dbg)
+		var wndLog: wnd@Wnd :: wnd@makeWnd(null, %aspect, 512, 512, "for debug")
+		do @editLog :: wnd@makeEditMulti(wndLog, 12, 12, 500, 500, %scale, %scale)
+	end if
 	while(wnd@act())
 		do @Do()
 	end while
@@ -33,11 +33,11 @@ func Do()
 	var qrEncode2: \qr@QrEncode :: #\qr@QrEncode
 
 	var data1: []bit8 :: #[0]bit8
-	foreach c(@sampleData1)
-		do data1 :~ [c $ bit8]
-	end foreach
+	for i(0, ^@sampleData1 - 1)
+		do data1 :~ [@sampleData1[i] $ bit8]
+	end for
 	{引  数：誤り訂正レベル、型番(0=自動)、型番自動拡張フラグ、マスキング番号(-1=自動)、エンコードしたいデータ([]bit8型)、エンコードしたいデータの長さ(0=自動)}
-	do qrEncode1.encodeData(%QR_LEVEL_H, 0, false, -1, data1, 0)
+	do qrEncode1.encodeData(\qr@QR_LEVEL_H, 0, false, -1, data1, 0)
 
 	var data2: []bit8
 	var reader: file@Reader 
@@ -57,22 +57,22 @@ func Do()
 		・エンコードしたいデータ([]bit8型)
 		・エンコードしたいデータの長さ(0=自動)
 		}
-		do qrEncode2.encodeData(%QR_LEVEL_M, 0, false, -1, data2, 0)
+		do qrEncode2.encodeData(\qr@QR_LEVEL_M, 0, false, -1, data2, 0)
 	end if
 
-	{
-	do @editLog.readonly(true)
-	do @editLog.setText(
-	|"data2 nLevel = \{qrEncode2.m_nLevel}\n" ~
-	|"data2 nVersion = \{qrEncode2.m_nVersion}\n" ~
-	|"data2 bAutoExtent = \{qrEncode2.m_bAutoExtent}\n" ~
-	|"data2 nMaskingNo = \{qrEncode2.m_nMaskingNo}\n" ~
-	|"data2 nSymbleSize = \{qrEncode2.m_nSymbleSize}\n" ~
-	|"data2(Ascii art):\n\{qrEncode2.toStr()}\n")
-	}
+	if(dbg)
+		do @editLog.readonly(true)
+		do @editLog.setText(
+		|"data2 nLevel = \{qrEncode2.getLevel()}\n" ~
+		|"data2 nVersion = \{qrEncode2.getVersion()}\n" ~
+		|"data2 bAutoExtent = \{qrEncode2.getAutoExtent()}\n" ~
+		|"data2 nMaskingNo = \{qrEncode2.getMaskingNo()}\n" ~
+		|"data2 nSymbleSize = \{qrEncode2.getSymbleSize()}\n" ~
+		|"data2(Ascii art):\n\{qrEncode2.toStr()}\n")
+	end if
 
-	do draw@clearColor(1.0, 0.0, 1.0)
-	do draw@rect(0.0, 0.0, 1600.0, 900.0, 0.3, 0.4, 1.0, 1.0) {背景}
+	do draw@clearColor(16#FFFF00FF)
+	do draw@rect(0.0, 0.0, 1600.0, 900.0, 16#FF061880) {背景}
 
 	{\qr@QrEncodeクラスのDrawメソッドの引数 => (x: float, y: float, size: float, bCellSizeMode: bool)}
 	do qrEncode1.draw( 10.0, 10.0, 300.0, false) {(x, y) = ( 10, 10)が左上になる位置に、余白含めて300のサイズで描画}
