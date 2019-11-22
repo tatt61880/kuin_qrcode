@@ -1,6 +1,6 @@
 {
 	qr_sample.kn
-		Last Modified: 2017/10/29 12:57:56.
+		Last Modified: 2019/11/23 08:57:20.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -71,8 +71,8 @@ func Do()
 		|"data2(Ascii art):\n\{qrEncode2.toStr()}\n")
 	end if
 
-	do draw@clearColor(16#FFFF00FF)
-	do draw@rect(0.0, 0.0, 1600.0, 900.0, 16#FF061880) {背景}
+	do draw@clearColor(0xFFFF00FF)
+	do draw@rect(0.0, 0.0, 1600.0, 900.0, 0xFF061880) {背景}
 
 	{\qr@QrEncodeクラスのDrawメソッドの引数 => (x: float, y: float, size: float, bCellSizeMode: bool)}
 	do qrEncode1.draw( 10.0, 10.0, 300.0, false) {(x, y) = ( 10, 10)が左上になる位置に、余白含めて300のサイズで描画}
