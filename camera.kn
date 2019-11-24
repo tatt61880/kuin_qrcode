@@ -1,0 +1,150 @@
+{
+	camera.kn:
+		Last Modified: 2019/11/24 23:08:23.
+		Created by Tatt(@tatt61880)
+		https://twitter.com/tatt61880
+		https://github.com/tatt61880
+
+	3Dのカメラを動かすライブラリです。
+}
++class Camera()
+	var pos: Vector
+	var dir: Vector {pos + dir = targetの位置}
+	var up: Vector
+	
+	+func init(dist: float): @Camera
+		do me.pos :: (#Vector).init(0.0, 0.0, dist)
+		do me.dir :: (#Vector).init(0.0, 0.0, -dist)
+		do me.up :: (#Vector).init(0.0, 1.0, 0.0)
+		ret me
+	end func
+	
+	+func rotHor(angle: float)
+		{ターゲット位置を支点とするup方向の軸周りの回転. 右ねじの回転が正}
+		var target: Vector :: (##me.pos).add(me.dir)
+		do me.pos.sub(target)
+		do me.dir.sub(target)
+		do me.pos.rot(me.up, angle)
+		do me.dir.rot(me.up, angle)
+		do me.pos.add(target)
+		do me.dir.add(target)
+	end func
+	
+	+func rotVer(angle: float)
+		{upとdirの外積(cross). ターゲット位置を支点とするcross方向の軸周りの回転. up方向に回転させる向きが正}
+		var cross: Vector :: me.up.cross(me.dir).norm()
+		var target: Vector :: (##me.pos).add(me.dir)
+		do me.pos.sub(target)
+		do me.dir.sub(target)
+		do me.pos.rot(cross, angle)
+		do me.dir.rot(cross, angle)
+		do me.up.rot(cross, angle)
+		do me.pos.add(target)
+		do me.dir.add(target)
+	end func
+	
+	+func rotUp(angle: float)
+		{upをdir周りに回転．右ねじの回転が正}
+		do me.up.rot(me.dir.norm(), angle)
+	end func
+	
+	+func rotTargetHor(angle: float)
+		{up周りの回転. 右ねじの回転が正}
+		do me.dir.rot(me.up, angle)
+	end func
+	
+	+func rotTargetVer(angle: float)
+		{dirとupの外積(cross). cross周りの回転. dirをup方向に回転させる向きが正}
+		var cross: Vector :: me.dir.cross(me.up)
+		do me.dir.rot(cross, angle)
+		do me.up.rot(cross, angle)
+	end func
+	
+	+func moveDir(d: float)
+		var norm: Vector :: me.dir.norm()
+		if(me.pos.abs() = d)
+			ret
+		end if
+		do me.pos.x :+ norm.x * d
+		do me.pos.y :+ norm.y * d
+		do me.pos.z :+ norm.z * d
+		do me.dir.x :- norm.x * d
+		do me.dir.y :- norm.y * d
+		do me.dir.z :- norm.z * d
+	end func
+	
+	{
+	+func moveRel(x: float, y: float, z: float)
+		do me.pos.x :+ x
+		do me.pos.y :+ y
+		do me.pos.z :+ z
+	end func
+	
+	+func moveAbs(x: float, y: float, z: float)
+		do me.pos.x :: x
+		do me.pos.y :: y
+		do me.pos.z :: z
+	end func
+	}
+	
+	+func setCamera()
+		do draw@camera(me.pos.x, me.pos.y, me.pos.z, (me.pos.x + me.dir.x), (me.pos.y + me.dir.y), (me.pos.z + me.dir.z), me.up.x, me.up.y, me.up.z)
+	end func
+	
+	class Vector()
+		+var x: float
+		+var y: float
+		+var z: float
+		
+		+func init(x: float, y: float, z: float): Vector
+			do me.x :: x
+			do me.y :: y
+			do me.z :: z
+			ret me
+		end func
+		
+		+func abs(): float
+			ret (me.x ^ 2.0 + me.y ^ 2.0 + me.z ^ 2.0) ^ 0.5
+		end func
+		
+		+func norm(): Vector
+			var res: Vector :: ##me
+			var abs: float :: res.abs()
+			do res.x :/ abs
+			do res.y :/ abs
+			do res.z :/ abs
+			ret res
+		end func
+		
+		+func add(a: Vector): Vector
+			do me.x :+ a.x
+			do me.y :+ a.y
+			do me.z :+ a.z
+			ret me
+		end func
+		
+		+func sub(a: Vector): Vector
+			do me.x :- a.x
+			do me.y :- a.y
+			do me.z :- a.z
+			ret me
+		end func
+		
+		+func rot(axis: Vector, angle: float)
+			var cos: float :: lib@cos(angle)
+			var sin: float :: lib@sin(angle)
+			var d: Vector :: ##me
+			do me.x :: (axis.x * axis.x * (1.0 - cos) + cos) * d.x + (axis.x * axis.y * (1.0 - cos) - axis.z * sin) * d.y + (axis.z * axis.x * (1.0 - cos) + axis.y * sin) * d.z
+			do me.y :: (axis.x * axis.y * (1.0 - cos) + axis.z * sin) * d.x + (axis.y * axis.y * (1.0 - cos) + cos) * d.y + (axis.y * axis.z * (1.0 - cos) - axis.x * sin) * d.z
+			do me.z :: (axis.z * axis.x * (1.0 - cos) - axis.y * sin) * d.x + (axis.y * axis.z * (1.0 - cos) + axis.x * sin) * d.y + (axis.z * axis.z * (1.0 - cos) + cos) * d.z
+		end func
+		
+		+func cross(t: Vector): Vector
+			ret (#Vector).init(me.y * t.z - me.z * t.y, me.z * t.x - me.x * t.z, me.x * t.y - me.y * t.x)
+		end func
+
+		+*func toStr(): []char
+			ret "(" ~ me.x.toStr() ~ ", " ~ me.y.toStr() ~ ", " ~ me.z.toStr() ~ ")"
+		end func
+	end class
+end class

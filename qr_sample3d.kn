@@ -1,0 +1,150 @@
+{
+	qr_sample3d.kn
+		Last Modified: 2019/11/25 00:04:47.
+
+	QRコードライブラリの使用サンプルです。
+		Created by Tatt(@tatt61880)
+		https://twitter.com/tatt61880
+		https://github.com/tatt61880
+}
+
+var editLog: wnd@EditMulti
+
+func main()
+	const wndSizeW: int :: 800
+	const wndSizeH: int :: 400
+	var wndMain: wnd@Wnd :: wnd@makeWnd(null, %aspect, wndSizeW, wndSizeH, "Hello, QR!")
+	var drawMain: wnd@Draw :: wnd@makeDraw(wndMain, 0, 0, wndSizeW, wndSizeH, %scale, %scale, false)
+
+	do @Do()
+end func
+
+func Do()
+	do draw@clearColor(0xFFFFFFFF)
+	do draw@rect(0.0, 0.0, 1600.0, 900.0, 0xFF061880) {背景}
+
+	var data: [][][]bool :: #[21, 21, 21]bool
+	for x(0, 20)
+		for y(0, 20)
+			for z(0, 20)
+				do data[z][y][x] :: true
+			end for
+		end for
+	end for
+
+
+	var qr1: \qr@QrEncode :: #\qr@QrEncode
+	var qr2: \qr@QrEncode :: #\qr@QrEncode
+	var qr3: \qr@QrEncode :: #\qr@QrEncode
+	const n: int :: 1
+
+	{引  数：誤り訂正レベル、型番(0=自動)、型番自動拡張フラグ、マスキング番号(-1=自動)、エンコードしたいデータ([]bit8型)、エンコードしたいデータの長さ(0=自動)}
+	do qr1.encodeData(\qr@QR_LEVEL_L, 0, false, -1, ['X' $ bit8].repeat(n), 0)
+	do qr2.encodeData(\qr@QR_LEVEL_L, 0, false, -1, ['Y' $ bit8].repeat(n), 0)
+	do qr3.encodeData(\qr@QR_LEVEL_L, 0, false, -1, ['Z' $ bit8].repeat(n), 0)
+	{\qr@QrEncodeクラスのDrawメソッドの引数 => (x: float, y: float, size: float, bCellSizeMode: bool)}
+	; do qr1.draw( 10.0, 10.0, 200.0, false)
+	; do qr2.draw(220.0, 10.0, 200.0, false)
+	; do qr3.draw(430.0, 10.0, 200.0, false)
+
+	var arr1: [][]bool :: qr1.toArray()
+	var arr2: [][]bool :: qr2.toArray()
+	var arr3: [][]bool :: qr3.toArray()
+	for x(0, 20)
+		for y(0, 20)
+			for z(0, 20)
+				do data[z][y][x] :: data[z][y][x] & arr3[20 - y][x] & arr2[z][x] & arr1[20 - y][20 - z]
+			end for
+		end for
+	end for
+
+	var objBox: draw@Obj :: draw@makeObj("res/box.knobj") {箱モデルの読み込み}
+	var texBox: draw@Tex :: draw@makeTex("res/box.png") {箱モデル用のテクスチャの読み込み}
+	var angle: float :: 0.0
+
+	var t: float :: 0.0
+
+	const dist: float :: 400.0
+	const size: float :: 1.00
+	do draw@camera(0.0, 0.0, dist, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0) {X}
+
+	var camera: \camera@Camera
+	do @initCamera(&camera)
+
+	while(wnd@act())
+		do @moveCamera(&camera)
+		do camera.setCamera()
+		for x(0, 20)
+			for y(0, 20)
+				for z(0, 20)
+					if(data[z][y][x])
+						do objBox.pos(size, size, size, 0.0, 0.0, 0.0, x $ float - 10.0, y $ float - 10.0, z $ float - 10.0) {箱モデルの位置設定}
+						do objBox.draw(0, 0.0, texBox, null, null) {箱モデルの描画}
+					end if
+				end for
+			end for
+		end for
+		do objBox.draw(0, 0.0, texBox, null, null) {箱モデルの描画}
+
+		do draw@render(60)
+	end while
+end func
+
+func initCamera(camera :&\camera@Camera)
+	do camera :: (#\camera@Camera).init(400.0)
+end func
+
+var xCnt: int :: 0
+var yCnt: int :: 0
+var dCnt: int :: 0
+
+func moveCamera(camera :&\camera@Camera)
+	if(input@pad(0, %right) > 0)
+		if(@xCnt <> 90)
+			do camera.rotHor(lib@pi / 180.0)
+			do @xCnt :+ 1
+		end if
+	end if
+	if(input@pad(0, %left) > 0)
+		if(@xCnt <> 0)
+			do camera.rotHor(-lib@pi / 180.0)
+			do @xCnt :- 1
+		end if
+	end if
+	if(input@pad(0, %up) > 0)
+		if(@yCnt <> 90)
+			do camera.rotVer(lib@pi / 180.0)
+			do @yCnt :+ 1
+		end if
+	end if
+	if(input@pad(0, %down) > 0)
+		if(@yCnt <> 0)
+			do camera.rotVer(-lib@pi / 180.0)
+			do @yCnt :- 1
+		end if
+	end if
+	if(input@pad(0, %c) > 0)
+		do camera.rotUp(lib@pi / 180.0)
+	end if
+	if(input@pad(0, %d) > 0)
+		do camera.rotUp(-lib@pi / 180.0)
+	end if
+	if(input@pad(0, %r) > 0 | input@pad(0, %a) > 0)
+		if(@dCnt <> 350)
+			do camera.moveDir(5.0)
+			do @dCnt :+ 5
+		end if
+	end if
+	if(input@pad(0, %l) > 0 | input@pad(0, %b) > 0)
+		if(@dCnt <> 0)
+			do camera.moveDir(-5.0)
+			do @dCnt :- 5
+		end if
+	end if
+	if(input@pad(0, %c) > 0 & input@pad(0, %d) > 0)
+		do @initCamera(&camera)
+		do @xCnt :: 0
+		do @yCnt :: 0
+		do @dCnt :: 0
+	end if
+end func

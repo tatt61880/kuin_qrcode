@@ -1384,6 +1384,16 @@ end func
 		ret retVal
 	end func
 
+	+func toArray(): [][]bool
+		var retVal: [][]bool :: #[me.m_nSymbleSize, me.m_nSymbleSize]bool
+		for y(0, me.m_nSymbleSize - 1)
+			for x(0, me.m_nSymbleSize - 1)
+				do retVal[y][x] :: me.m_byModuleData[x][y] <> @x00
+			end for
+		end for
+		ret retVal
+	end func
+
 	+func draw(x0: float, y0: float, size: float, bCellSizeMode: bool)
 		var cellSize: float
 		if(bCellSizeMode)
