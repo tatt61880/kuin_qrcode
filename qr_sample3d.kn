@@ -1,6 +1,6 @@
 {
 	qr_sample3d.kn
-		Last Modified: 2019/11/25 01:17:40.
+		Last Modified: 2019/11/25 01:37:14.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -11,8 +11,8 @@
 var editLog: wnd@EditMulti
 
 func main()
-	const wndSizeW: int :: 800
-	const wndSizeH: int :: 400
+	const wndSizeW: int :: 1600
+	const wndSizeH: int :: 900
 	var wndMain: wnd@Wnd :: wnd@makeWnd(null, %aspect, wndSizeW, wndSizeH, "QR 3D")
 	var drawMain: wnd@Draw :: wnd@makeDraw(wndMain, 0, 0, wndSizeW, wndSizeH, %scale, %scale, false)
 
