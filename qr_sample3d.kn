@@ -1,6 +1,6 @@
 {
 	qr_sample3d.kn
-		Last Modified: 2019/11/25 01:37:14.
+		Last Modified: 2019/11/25 01:41:01.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -38,10 +38,17 @@ func Do()
 	var qr3: \qr@QrEncode :: #\qr@QrEncode
 	const n: int :: 1
 
+	func charToBit8(input: []char): []bit8
+		var res: []bit8 :: #[^input]bit8
+		for i(0, ^input - 1)
+			do res[i] :: input[i] $ bit8
+		end for
+		ret res
+	end func
 	{引  数：誤り訂正レベル、型番(0=自動)、型番自動拡張フラグ、マスキング番号(-1=自動)、エンコードしたいデータ([]bit8型)、エンコードしたいデータの長さ(0=自動)}
-	do qr1.encodeData(\qr@QR_LEVEL_L, 0, false, -1, ['X' $ bit8].repeat(n), 0)
-	do qr2.encodeData(\qr@QR_LEVEL_L, 0, false, -1, ['Y' $ bit8].repeat(n), 0)
-	do qr3.encodeData(\qr@QR_LEVEL_L, 0, false, -1, ['Z' $ bit8].repeat(n), 0)
+	do qr1.encodeData(\qr@QR_LEVEL_L, 0, false, -1, charToBit8("X".repeat(n)), 0)
+	do qr2.encodeData(\qr@QR_LEVEL_L, 0, false, -1, charToBit8("Y".repeat(n)), 0)
+	do qr3.encodeData(\qr@QR_LEVEL_L, 0, false, -1, charToBit8("Z".repeat(n)), 0)
 	{\qr@QrEncodeクラスのDrawメソッドの引数 => (x: float, y: float, size: float, bCellSizeMode: bool)}
 	; do qr1.draw( 10.0, 10.0, 200.0, false)
 	; do qr2.draw(220.0, 10.0, 200.0, false)
