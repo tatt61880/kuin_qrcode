@@ -1,6 +1,6 @@
 {
 	qr_sample3d.kn
-		Last Modified: 2019/11/25 00:04:47.
+		Last Modified: 2019/11/25 01:04:37.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -13,7 +13,7 @@ var editLog: wnd@EditMulti
 func main()
 	const wndSizeW: int :: 800
 	const wndSizeH: int :: 400
-	var wndMain: wnd@Wnd :: wnd@makeWnd(null, %aspect, wndSizeW, wndSizeH, "Hello, QR!")
+	var wndMain: wnd@Wnd :: wnd@makeWnd(null, %aspect, wndSizeW, wndSizeH, "QR 3D")
 	var drawMain: wnd@Draw :: wnd@makeDraw(wndMain, 0, 0, wndSizeW, wndSizeH, %scale, %scale, false)
 
 	do @Do()
@@ -58,8 +58,8 @@ func Do()
 		end for
 	end for
 
-	var objBox: draw@Obj :: draw@makeObj("res/box.knobj") {箱モデルの読み込み}
-	var texBox: draw@Tex :: draw@makeTex("res/box.png") {箱モデル用のテクスチャの読み込み}
+	var objBox: draw@Obj :: draw@makeBox()
+	var texBox: draw@Tex :: draw@makeTex("res/box.png")
 	var angle: float :: 0.0
 
 	var t: float :: 0.0
@@ -78,13 +78,12 @@ func Do()
 			for y(0, 20)
 				for z(0, 20)
 					if(data[z][y][x])
-						do objBox.pos(size, size, size, 0.0, 0.0, 0.0, x $ float - 10.0, y $ float - 10.0, z $ float - 10.0) {箱モデルの位置設定}
-						do objBox.draw(0, 0.0, texBox, null, null) {箱モデルの描画}
+						do objBox.pos(size, size, size, 0.0, 0.0, 0.0, x $ float - 10.0, y $ float - 10.0, z $ float - 10.0)
+						do objBox.draw(0, 0.0, texBox, null, null)
 					end if
 				end for
 			end for
 		end for
-		do objBox.draw(0, 0.0, texBox, null, null) {箱モデルの描画}
 
 		do draw@render(60)
 	end while
