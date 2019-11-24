@@ -1,6 +1,6 @@
 {
 	qr_sample3d.kn
-		Last Modified: 2019/11/25 04:26:02.
+		Last Modified: 2019/11/25 04:32:11.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -45,9 +45,9 @@ func Do()
 		ret res
 	end func
 
-	{25字まで}
+	{[0-9A-Z] 25字まで}
 	const n: int :: 25
-	;var str1: []char :: "0123456789012345678901234"
+	;var str1: []char :: "1234567890123456789012345"
 	var str1: []char :: "X".repeat(n)
 	var str2: []char :: "Y".repeat(n)
 	var str3: []char :: "Z".repeat(n)
