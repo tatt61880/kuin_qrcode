@@ -1,6 +1,6 @@
 {
 	qr_sample3d.kn
-		Last Modified: 2019/11/25 01:41:01.
+		Last Modified: 2019/11/25 04:26:02.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -36,7 +36,6 @@ func Do()
 	var qr1: \qr@QrEncode :: #\qr@QrEncode
 	var qr2: \qr@QrEncode :: #\qr@QrEncode
 	var qr3: \qr@QrEncode :: #\qr@QrEncode
-	const n: int :: 1
 
 	func charToBit8(input: []char): []bit8
 		var res: []bit8 :: #[^input]bit8
@@ -45,10 +44,18 @@ func Do()
 		end for
 		ret res
 	end func
+
+	{25字まで}
+	const n: int :: 25
+	;var str1: []char :: "0123456789012345678901234"
+	var str1: []char :: "X".repeat(n)
+	var str2: []char :: "Y".repeat(n)
+	var str3: []char :: "Z".repeat(n)
+
 	{引  数：誤り訂正レベル、型番(0=自動)、型番自動拡張フラグ、マスキング番号(-1=自動)、エンコードしたいデータ([]bit8型)、エンコードしたいデータの長さ(0=自動)}
-	do qr1.encodeData(\qr@QR_LEVEL_L, 0, false, -1, charToBit8("X".repeat(n)), 0)
-	do qr2.encodeData(\qr@QR_LEVEL_L, 0, false, -1, charToBit8("Y".repeat(n)), 0)
-	do qr3.encodeData(\qr@QR_LEVEL_L, 0, false, -1, charToBit8("Z".repeat(n)), 0)
+	do qr1.encodeData(\qr@QR_LEVEL_L, 1, false, -1, charToBit8(str1), 0)
+	do qr2.encodeData(\qr@QR_LEVEL_L, 1, false, -1, charToBit8(str2), 0)
+	do qr3.encodeData(\qr@QR_LEVEL_L, 1, false, -1, charToBit8(str3), 0)
 	{\qr@QrEncodeクラスのDrawメソッドの引数 => (x: float, y: float, size: float, bCellSizeMode: bool)}
 	; do qr1.draw( 10.0, 10.0, 200.0, false)
 	; do qr2.draw(220.0, 10.0, 200.0, false)
