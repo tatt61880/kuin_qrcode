@@ -1,6 +1,6 @@
 {
 	qr_sample3d.kn
-		Last Modified: 2019/11/25 04:32:11.
+		Last Modified: 2019/11/25 19:00:46.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -46,7 +46,7 @@ func Do()
 	end func
 
 	{[0-9A-Z] 25字まで}
-	const n: int :: 25
+	const n: int :: 1
 	;var str1: []char :: "1234567890123456789012345"
 	var str1: []char :: "X".repeat(n)
 	var str2: []char :: "Y".repeat(n)
@@ -67,7 +67,8 @@ func Do()
 	for x(0, 20)
 		for y(0, 20)
 			for z(0, 20)
-				do data[z][y][x] :: data[z][y][x] & arr3[20 - y][x] & arr2[z][x] & arr1[20 - y][20 - z]
+				;do data[z][y][x] :: data[z][y][x] & arr3[20 - y][x] & arr2[z][x] & arr1[20 - y][20 - z]
+				do data[z][y][x] :: data[z][y][x] & arr3[20 - y][x] & arr2[x][20 - z] & arr1[20 - y][20 - z]
 			end for
 		end for
 	end for
@@ -75,7 +76,7 @@ func Do()
 	var objBox: draw@Obj :: draw@makeBox()
 	var texBox: draw@Tex :: draw@makeTex("res/box.png")
 
-	const size: float :: 1.00
+	const size: float :: 1.001
 
 	var camera: \camera@Camera
 	do @initCamera(&camera)
@@ -139,7 +140,7 @@ func moveCamera(camera :&\camera@Camera)
 		do camera.rotUp(-lib@pi / 180.0)
 	end if
 	if(input@pad(0, %r) > 0 | input@pad(0, %a) > 0)
-		if(@dCnt <> 350)
+		if(@dCnt <> 380)
 			do camera.moveDir(5.0)
 			do @dCnt :+ 5
 		end if
