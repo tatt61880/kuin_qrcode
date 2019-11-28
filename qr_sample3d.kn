@@ -1,6 +1,6 @@
 {
 	qr_sample3d.kn
-		Last Modified: 2019/11/25 19:00:46.
+		Last Modified: 2019/11/28 21:54:51.
 
 	QRコードライブラリの使用サンプルです。
 		Created by Tatt(@tatt61880)
@@ -8,20 +8,18 @@
 		https://github.com/tatt61880
 }
 
-var editLog: wnd@EditMulti
+const wndSizeW: int :: 1600
+const wndSizeH: int :: 900
 
 func main()
-	const wndSizeW: int :: 1600
-	const wndSizeH: int :: 900
-	var wndMain: wnd@Wnd :: wnd@makeWnd(null, %aspect, wndSizeW, wndSizeH, "QR 3D")
-	var drawMain: wnd@Draw :: wnd@makeDraw(wndMain, 0, 0, wndSizeW, wndSizeH, %scale, %scale, false)
-
+	var wndMain: wnd@Wnd :: wnd@makeWnd(null, %aspect, @wndSizeW, @wndSizeH, "QR 3D")
+	var drawMain: wnd@Draw :: wnd@makeDraw(wndMain, 0, 0, @wndSizeW, @wndSizeH, %scale, %scale, false)
 	do @Do()
 end func
 
 func Do()
 	do draw@clearColor(0xFFFFFFFF)
-	do draw@rect(0.0, 0.0, 1600.0, 900.0, 0xFF061880) {背景}
+	do draw@rect(0.0, 0.0, @wndSizeW $ float, @wndSizeH $ float, 0xFF061880) {背景}
 
 	var data: [][][]bool :: #[21, 21, 21]bool
 	for x(0, 20)
