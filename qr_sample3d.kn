@@ -1,9 +1,7 @@
 {
 	qr_sample3d.kn
-		Last Modified: 2019/11/28 21:54:51.
-
-	QRコードライブラリの使用サンプルです。
-		Created by Tatt(@tatt61880)
+		QRコードライブラリの使用サンプルです。
+	Created by Tatt(@tatt61880)
 		https://twitter.com/tatt61880
 		https://github.com/tatt61880
 }
